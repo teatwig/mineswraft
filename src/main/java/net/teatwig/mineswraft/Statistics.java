@@ -174,7 +174,7 @@ class Statistics {
         if(statsPath != null) { // windows?
             statsPath += sep + "Mineswraft";
         } else {
-            statsPath = System.getenv("user.home") + sep + ".Mineswraft";
+            statsPath = System.getProperty("user.home") + sep + ".config/Mineswraft";
         }
         if(Files.notExists(Paths.get(statsPath))) {
             new File(statsPath).mkdir();
