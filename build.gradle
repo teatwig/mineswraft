@@ -1,0 +1,46 @@
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'javafx-gradle-plugin'
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath group: 'de.dynamicfiles.projects.gradle.plugins', name: 'javafx-gradle-plugin', version: '8.4.1'
+    }
+}
+
+
+repositories {
+    mavenCentral()
+}
+dependencies {
+    compile group: 'org.projectlombok', name: 'lombok', version: '1.16.8'
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+}
+
+/*
+ * Gets the version name from the latest Git tag
+ */
+def getVersionName = { ->
+    def stdout = new ByteArrayOutputStream()
+    exec {
+        commandLine 'git', 'describe', '--tags'
+        standardOutput = stdout
+        ignoreExitValue = true
+    }
+    def version = stdout.toString().trim()
+    if(version.equals("")) {
+        version = 'DEV'
+    }
+    return version
+}
+
+jfx {
+    verbose = true
+    mainClass 'net.teatwig.mineswraft.MainFX'
+    jfxMainAppJarName = rootProject.name+"-"+getVersionName()+".jar"
+
+    manifestAttributes = ['Implementation-Version': getVersionName()]
+}

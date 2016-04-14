@@ -1,0 +1,10 @@
+Dragging mouse away from a Cell pertains the action (still opening etc.)
+    => DONE // TODO do click/chord when reentering the Cell
+TODO show which fields will be chorded before the button(s) are released
+TODO import WinMine saves
+TODO add achievement description and proper name (toString)
+TODO save user configuration (last difficulty, colors active etc.)
+TODO gamemode where the user can uprade to a bigger field after win? maybe story progression: easy -> medium -> hard
+displayed time lower than win time
+
+In case of doubt, remember that x- and y-chord are inversed on the board.
