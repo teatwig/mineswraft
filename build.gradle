@@ -29,8 +29,13 @@ def getVersionName = { ->
     exec {
         commandLine 'git', 'describe', '--tags'
         standardOutput = stdout
+        ignoreExitValue = true
     }
-    return stdout.toString().trim()
+    def version = stdout.toString().trim()
+    if(version.equals("")) {
+        version = 'DEV'
+    }
+    return version
 }
 
 jfx {
