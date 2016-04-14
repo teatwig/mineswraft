@@ -3,13 +3,9 @@ package net.teatwig.mineswraft;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
-import static net.teatwig.mineswraft.Achievement.*;
 
 /**
  * Created by timo on 03.03.2016.
@@ -23,8 +19,6 @@ class Board {
     private int remainingMines;
     private LocalDateTime startTime;
     private int difficultyType = -1;
-    private Set<Achievement> newAchievements = new HashSet<>();
-    private boolean noFieldMarked = true; // Achievement
 
     Board(int width, int height, int mines, int difficultyType) {
         this(width, height, mines);
@@ -106,8 +100,6 @@ class Board {
                     remainingMines -= 1;
                 else
                     remainingMines += 1;
-
-                noFieldMarked = false;
             } catch (ArrayIndexOutOfBoundsException ex) {
                 ex.printStackTrace();
                 // didn't handle possible errors down there either
@@ -121,8 +113,6 @@ class Board {
         if(onlyMinesLeft()) {
             remainingMines = 0;
             gameWon = true;
-
-            handleAchievements();
         }
     }
 
@@ -205,35 +195,6 @@ class Board {
         return true;
     }
 
-    private void handleAchievements() {
-        switch (difficultyType) {
-            case Difficulty.EASY:
-                if(EASY_WIN.isNotObtained()) {
-                    newAchievements.add(EASY_WIN.setObtainedAndGet());
-                }
-                if(EASY_NOMARK.isNotObtained() && noFieldMarked) {
-                    newAchievements.add(EASY_NOMARK.setObtainedAndGet());
-                }
-                break;
-            case Difficulty.MEDIUM:
-                if(MEDIUM_WIN.isNotObtained()) {
-                    newAchievements.add(MEDIUM_WIN.setObtainedAndGet());
-                }
-                if(MEDIUM_NOMARK.isNotObtained() && noFieldMarked) {
-                    newAchievements.add(MEDIUM_NOMARK.setObtainedAndGet());
-                }
-                break;
-            case Difficulty.HARD:
-                if(HARD_WIN.isNotObtained()) {
-                    newAchievements.add(HARD_WIN.setObtainedAndGet());
-                }
-                if(HARD_NOMARK.isNotObtained() && noFieldMarked) {
-                    newAchievements.add(HARD_NOMARK.setObtainedAndGet());
-                }
-                break;
-        }
-    }
-
     boolean isGameOver() {
         return gameOver;
     }
@@ -256,10 +217,6 @@ class Board {
         } else {
             return Duration.between(startTime, LocalDateTime.now());
         }
-    }
-
-    Set<Achievement> getNewAchievements() {
-        return newAchievements;
     }
 
     int getRemainingMines() {

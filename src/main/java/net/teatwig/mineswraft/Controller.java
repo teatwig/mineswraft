@@ -14,7 +14,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseButton;
 import static javafx.scene.input.MouseButton.*;
@@ -23,10 +22,8 @@ import static javafx.scene.input.MouseEvent.*;
 
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
-import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 import java.time.Duration;
@@ -39,8 +36,6 @@ public class Controller {
 
     @FXML
     private AnchorPane rootPane;
-    @FXML
-    private VBox structureVBox;
     @FXML
     private GridPane gridPane;
     @FXML
@@ -55,8 +50,6 @@ public class Controller {
     private RadioMenuItem customToggle;
     @FXML
     private CheckMenuItem colorToggle;
-    @FXML
-    private RadioMenuItem expAchieveToggle;
 
     private Board board;
     private Toggle currentDifficultyToggle;
@@ -97,34 +90,6 @@ public class Controller {
         updateDifficulty();
 
         newGame();
-    }
-
-    private void addAchievement(String str) {
-        HBox achievementHBox = new HBox();
-        achievementHBox.setStyle("-fx-background-color: #39f");
-        achievementHBox.setPadding(new Insets(10));
-        achievementHBox.setSpacing(10);
-        achievementHBox.setAlignment(Pos.CENTER);
-        achievementHBox.setEffect(new DropShadow(5, Color.valueOf("black")));
-
-        Text achievementGotText = new Text("You've got the "+str+" achievement!");
-        Text clickToCloseText = new Text("X");
-        clickToCloseText.setFont(Font.font(null, FontWeight.BOLD, 20));
-        clickToCloseText.setFill(Paint.valueOf("#CCC"));
-
-        //achievementGotText.setPrefWidth(150);
-        //achievementGotText.setPrefHeight(200);
-        //achievementGotText.wrappingWidthProperty().bind(getStage(rootPane).widthProperty().subtract(50));
-
-
-        achievementHBox.getChildren().addAll(achievementGotText, clickToCloseText);
-        achievementHBox.setOnMouseClicked(e -> {
-            structureVBox.getChildren().remove(achievementHBox);
-            autoResizeStage();
-        });
-
-        structureVBox.getChildren().add(achievementHBox);
-        autoResizeStage();
     }
 
     private void newGame() {
@@ -292,15 +257,6 @@ public class Controller {
             }
         }
         remainingLabel.setText(String.valueOf(board.getRemainingMines()));
-
-        if(expAchievementsEnabled() && !board.getNewAchievements().isEmpty()) {
-            Iterator<Achievement> newAchieveIter = board.getNewAchievements().iterator();
-            while(newAchieveIter.hasNext()) {
-                Achievement curr = newAchieveIter.next();
-                addAchievement(curr.name());
-                newAchieveIter.remove();
-            }
-        }
     }
 
     private void syncFieldAndChild(Field f, Button c) {
@@ -458,18 +414,6 @@ public class Controller {
         } catch(NullPointerException ex) {
 
         }
-    }
-
-    private static boolean expAchievementsEnabled = false;
-    public void updateExpAchieveToggle() {
-        expAchievementsEnabled = expAchieveToggle.isSelected();
-        if(expAchievementsEnabled() && Achievement.EXP_ACHIEVE.isNotObtained()) {
-            addAchievement(Achievement.EXP_ACHIEVE.setObtainedAndGet().name());
-        }
-    }
-
-    static boolean expAchievementsEnabled() {
-        return expAchievementsEnabled;
     }
 
     public static Image[] gameIcon() {

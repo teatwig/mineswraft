@@ -56,20 +56,15 @@ class Statistics {
         Dialog statisticsDialog = new Dialog();
         Controller.setDialogIcon(statisticsDialog);
         statisticsDialog.setTitle("Statistics");
-        HBox content1_1 = new HBox(
+        HBox content = new HBox(
                 new Label(statisticsStrFor(Difficulty.EASY)),
                 new Label(statisticsStrFor(Difficulty.MEDIUM)),
                 new Label(statisticsStrFor(Difficulty.HARD))
         );
-        content1_1.setSpacing(20);
-        content1_1.setAlignment(Pos.TOP_LEFT); // TODO doesn't work??
-        VBox content1 = new VBox(content1_1);
+        content.setSpacing(20);
+        content.setAlignment(Pos.TOP_LEFT); // TODO doesn't work??
 
-        if(Controller.expAchievementsEnabled()) {
-            content1.getChildren().add(new Label(Achievement.allToString()));
-        }
-
-        statisticsDialog.getDialogPane().setContent(content1);
+        statisticsDialog.getDialogPane().setContent(content);
         statisticsDialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
         statisticsDialog.show();
     }
