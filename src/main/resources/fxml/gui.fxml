@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.input.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane fx:id="rootPane" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="net.teatwig.mineswraft.Controller">
+   <children>
+      <VBox fx:id="structureVBox" prefHeight="250.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <children>
+            <MenuBar>
+              <menus>
+                  <Menu mnemonicParsing="false" text="Game">
+                     <items>
+                        <MenuItem mnemonicParsing="false" onAction="#newGameAlert" text="New Game">
+                           <accelerator>
+                              <KeyCodeCombination alt="UP" code="N" control="UP" meta="UP" shift="UP" shortcut="ANY" />
+                           </accelerator>
+                        </MenuItem>
+                        <MenuItem mnemonicParsing="false" onAction="#openStatisticsDialog" text="Statistics" />
+                        <MenuItem mnemonicParsing="false" onAction="#quit" text="Quit">
+                           <accelerator>
+                              <KeyCodeCombination alt="UP" code="Q" control="UP" meta="UP" shift="UP" shortcut="ANY" />
+                           </accelerator>
+                        </MenuItem>
+                     </items>
+                  </Menu>
+                <Menu mnemonicParsing="false" text="Settings">
+                     <items>
+                        <CheckMenuItem fx:id="colorToggle" mnemonicParsing="false" onAction="#colorToggleHandler" text="Colors">
+                           <accelerator>
+                              <KeyCodeCombination alt="UP" code="C" control="UP" meta="UP" shift="UP" shortcut="ANY" />
+                           </accelerator>
+                        </CheckMenuItem>
+                        <SeparatorMenuItem mnemonicParsing="false" />
+                        <RadioMenuItem mnemonicParsing="false" onAction="#difficultyChangeHandler" selected="true" text="Easy (9 x 9, 10 mines)">
+                           <toggleGroup>
+                              <ToggleGroup fx:id="difficultyToggles" />
+                           </toggleGroup>
+                           <accelerator>
+                              <KeyCodeCombination alt="UP" code="DIGIT1" control="UP" meta="UP" shift="UP" shortcut="ANY" />
+                           </accelerator>
+                        </RadioMenuItem>
+                        <RadioMenuItem mnemonicParsing="false" onAction="#difficultyChangeHandler" text="Medium (16 x 16, 40 mines)" toggleGroup="$difficultyToggles">
+                           <accelerator>
+                              <KeyCodeCombination alt="UP" code="DIGIT2" control="UP" meta="UP" shift="UP" shortcut="ANY" />
+                           </accelerator>
+                        </RadioMenuItem>
+                        <RadioMenuItem mnemonicParsing="false" onAction="#difficultyChangeHandler" text="Hard (30 x 16, 99 mines)" toggleGroup="$difficultyToggles">
+                           <accelerator>
+                              <KeyCodeCombination alt="UP" code="DIGIT3" control="UP" meta="UP" shift="UP" shortcut="ANY" />
+                           </accelerator>
+                        </RadioMenuItem>
+                        <SeparatorMenuItem mnemonicParsing="false" />
+                        <RadioMenuItem fx:id="customToggle" mnemonicParsing="false" onAction="#customDifficultyHandler" text="Custom" toggleGroup="$difficultyToggles">
+                           <accelerator>
+                              <KeyCodeCombination alt="UP" code="DIGIT0" control="UP" meta="UP" shift="UP" shortcut="ANY" />
+                           </accelerator>
+                        </RadioMenuItem>
+                        <SeparatorMenuItem mnemonicParsing="false" />
+                        <RadioMenuItem fx:id="expAchieveToggle" mnemonicParsing="false" onAction="#updateExpAchieveToggle" text="Experiemental Achievements" />
+                     </items>
+                </Menu>
+              </menus>
+            </MenuBar>
+            <AnchorPane prefHeight="200.0" prefWidth="200.0">
+               <children>
+                  <HBox alignment="TOP_CENTER" AnchorPane.leftAnchor="3.0" AnchorPane.rightAnchor="3.0" AnchorPane.topAnchor="0.0">
+                     <children>
+                        <Label fx:id="infoLabel" text="" HBox.hgrow="ALWAYS" />
+                        <Label alignment="CENTER_RIGHT" maxWidth="1.7976931348623157E308" text="Remaining: " textAlignment="RIGHT" HBox.hgrow="ALWAYS" />
+                        <Label fx:id="remainingLabel" text="-" />
+                     </children>
+                  </HBox>
+                  <Label fx:id="timeLabel" alignment="CENTER" text="0" textAlignment="CENTER" AnchorPane.leftAnchor="3.0" AnchorPane.rightAnchor="3.0" AnchorPane.topAnchor="0.0" />
+                  <GridPane fx:id="gridPane" alignment="TOP_CENTER" gridLinesVisible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="27.0" />
+               </children>
+               <padding>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="5.0" />
+               </padding>
+            </AnchorPane>
+         </children>
+      </VBox>
+   </children>
+</AnchorPane>
