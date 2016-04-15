@@ -44,12 +44,20 @@ class Board {
     }
 
     private void init(int x_start, int y_start) {
+        init(x_start, y_start, false);
+    }
+
+    private void initNonogramMode() {
+        init(-3, -3, true); // could be 0 but value isn't used anyway
+    }
+
+    private void init(int x_start, int y_start, boolean nonogramModeEnabled) {
         List<Integer> minePositions = IntStream.range(0, width*height).boxed().collect(Collectors.toList());
         Collections.shuffle(minePositions);
         // init mines
         minePositions.stream()
                 .map(p -> new int[]{p%width, p/width})
-                .filter(arr -> notAdjacentToOrStart(x_start, y_start, arr[0], arr[1]))
+                .filter(arr -> nonogramModeEnabled || notAdjacentToOrStart(x_start, y_start, arr[0], arr[1]))
                 .limit(mines)
                 .forEach(arr -> board[arr[1]][arr[0]] = new Field());
         // init remaining
@@ -63,6 +71,7 @@ class Board {
         firstMoveDone = true;
         startTime = LocalDateTime.now();
     }
+
 
     private boolean notAdjacentToOrStart(int x_start, int y_start, int x_cord, int y_cord) {
         return x_cord < x_start - 1 || x_cord > x_start + 1 || y_cord < y_start - 1 || y_cord > y_start + 1;
