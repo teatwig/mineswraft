@@ -102,7 +102,9 @@ public class Controller {
         newGame();
     }
 
-    private void addAchievement(String str) {
+    private void addAchievement(Achievement achievement) {
+        String name = achievement.toString();
+
         HBox achievementHBox = new HBox();
         achievementHBox.setStyle("-fx-background-color: #39f");
         achievementHBox.setPadding(new Insets(10));
@@ -110,7 +112,7 @@ public class Controller {
         achievementHBox.setAlignment(Pos.CENTER);
         achievementHBox.setEffect(new DropShadow(5, Color.valueOf("black")));
 
-        Text achievementGotText = new Text("You've got the "+str+" achievement!");
+        Text achievementGotText = new Text("You've got the "+name+" achievement!");
         Text clickToCloseText = new Text("X");
         clickToCloseText.setFont(Font.font(null, FontWeight.BOLD, 20));
         clickToCloseText.setFill(Paint.valueOf("#CCC"));
@@ -289,7 +291,7 @@ public class Controller {
             Iterator<Achievement> newAchieveIter = board.getNewAchievements().iterator();
             while(newAchieveIter.hasNext()) {
                 Achievement curr = newAchieveIter.next();
-                addAchievement(curr.toString());
+                addAchievement(curr);
                 newAchieveIter.remove();
             }
         }
@@ -455,8 +457,8 @@ public class Controller {
     private static boolean expAchievementsEnabled = false;
     public void updateExpAchieveToggle() {
         expAchievementsEnabled = expAchieveToggle.isSelected();
-        if(expAchievementsEnabled() && Achievement.EXP_ACHIEVE.isNotObtained()) {
-            addAchievement(Achievement.EXP_ACHIEVE.setObtainedAndGet().toString());
+        if(expAchievementsEnabled() && Achievement.EXP_ACHIEVE.isObtained() == false) {
+            addAchievement(Achievement.EXP_ACHIEVE.setObtainedAndGet());
         }
     }
 

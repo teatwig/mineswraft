@@ -212,31 +212,37 @@ class Board {
     }
 
     private void handleAchievements() {
+        handleAchievementsWin();
+        handleAchievementsNoMark();
+    }
+
+    private void handleAchievementsWin() {
         switch (difficultyType) {
             case Difficulty.EASY:
-                if(EASY_WIN.isNotObtained()) {
-                    newAchievements.add(EASY_WIN.setObtainedAndGet());
-                }
-                if(EASY_NOMARK.isNotObtained() && noFieldMarked) {
-                    newAchievements.add(EASY_NOMARK.setObtainedAndGet());
-                }
+                EASY_WIN.addToIfNotObtained(newAchievements);
                 break;
             case Difficulty.MEDIUM:
-                if(MEDIUM_WIN.isNotObtained()) {
-                    newAchievements.add(MEDIUM_WIN.setObtainedAndGet());
-                }
-                if(MEDIUM_NOMARK.isNotObtained() && noFieldMarked) {
-                    newAchievements.add(MEDIUM_NOMARK.setObtainedAndGet());
-                }
+                MEDIUM_WIN.addToIfNotObtained(newAchievements);
                 break;
             case Difficulty.HARD:
-                if(HARD_WIN.isNotObtained()) {
-                    newAchievements.add(HARD_WIN.setObtainedAndGet());
-                }
-                if(HARD_NOMARK.isNotObtained() && noFieldMarked) {
-                    newAchievements.add(HARD_NOMARK.setObtainedAndGet());
-                }
+                HARD_WIN.addToIfNotObtained(newAchievements);
                 break;
+        }
+    }
+
+    private void handleAchievementsNoMark() {
+        if(noFieldMarked) {
+            switch (difficultyType) {
+                case Difficulty.EASY:
+                    EASY_NOMARK.addToIfNotObtained(newAchievements);
+                    break;
+                case Difficulty.MEDIUM:
+                    MEDIUM_NOMARK.addToIfNotObtained(newAchievements);
+                    break;
+                case Difficulty.HARD:
+                    HARD_NOMARK.addToIfNotObtained(newAchievements);
+                    break;
+            }
         }
     }
 

@@ -1,5 +1,8 @@
 package net.teatwig.mineswraft;
 
+import lombok.AccessLevel;
+import lombok.Getter;
+
 import java.util.EnumSet;
 import java.util.Set;
 
@@ -12,26 +15,22 @@ enum Achievement {
     HARD_WIN,   HARD_NOMARK,
     EXP_ACHIEVE;
 
+    @Getter(AccessLevel.PACKAGE)
     private boolean obtained = false;
 
     static {
     }
 
-    boolean isNotObtained() {
-        return !obtained;
-    }
-
-    boolean isObtained() {
-        return obtained;
-    }
-
-    void setObtained() {
-        this.obtained = true;
-    }
-
     Achievement setObtainedAndGet() {
-        setObtained();
+        this.obtained = true;
         return this;
+    }
+
+    void addToIfNotObtained(Set<Achievement> achievements) {
+        if(this.obtained == false) {
+            this.obtained = true;
+            achievements.add(this);
+        }
     }
 
     static Set<Achievement> getSet() {
@@ -49,7 +48,7 @@ enum Achievement {
                 } else {
                     firstAdded = true;
                 }
-                stringBuilder.append(a.name());
+                stringBuilder.append(a.toString());
             }
         }
         return stringBuilder.toString();
