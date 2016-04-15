@@ -147,6 +147,7 @@ public class Controller {
 
         if(expNonogramModeEnabled) {
             board.initNonogramMode();
+            NonogramNumbers numbers = new NonogramNumbers(board);
             for (int y = 0; y < height; y++) {
                 for (int x = 0; x < width; x++) {
                     Button btn = new Button();
@@ -477,12 +478,7 @@ public class Controller {
 
     private void autoResizeStage() {
         try {
-            Stage st = getStage(rootPane);
-            System.out.printf("OLD w:%f h:%f minW: %f minH:%f maxW: %s maxH: %s%n",
-                    st.getWidth(), st.getHeight(), st.getMinWidth(), st.getMinHeight(), st.getMaxWidth()==Double.MAX_VALUE?"MAX":String.valueOf(st.getMaxWidth()), st.getMaxHeight()==Double.MAX_VALUE?"MAX":String.valueOf(st.getMaxHeight()));
-            st.sizeToScene();
-            System.out.printf("NEW w:%f h:%f minW: %f minH:%f maxW: %s maxH: %s%n",
-                    st.getWidth(), st.getHeight(), st.getMinWidth(), st.getMinHeight(), st.getMaxWidth()==Double.MAX_VALUE?"MAX":String.valueOf(st.getMaxWidth()), st.getMaxHeight()==Double.MAX_VALUE?"MAX":String.valueOf(st.getMaxHeight()));
+            getStage(rootPane).sizeToScene();
         } catch(NullPointerException ignored) {
 
         }
