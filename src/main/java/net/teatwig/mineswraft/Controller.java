@@ -1,6 +1,8 @@
 package net.teatwig.mineswraft;
 
 import javafx.application.Platform;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.event.Event;
@@ -62,6 +64,7 @@ public class Controller {
     private Toggle currentDifficultyToggle;
     private boolean colorThemeActive = false;
     private Difficulty currentDifficulty, lastDifficulty; // TODO remove lastDifficulty because it's not needed any longer
+    private IntegerProperty gridWith = new SimpleIntegerProperty();
 
     private static final int BUTTON_SIZE = 25;
     private static final String STYLE_CLOSED = "-fx-background-radius: 0";
@@ -112,10 +115,7 @@ public class Controller {
         clickToCloseText.setFont(Font.font(null, FontWeight.BOLD, 20));
         clickToCloseText.setFill(Paint.valueOf("#CCC"));
 
-        //achievementGotText.setPrefWidth(150);
-        //achievementGotText.setPrefHeight(200);
-        //achievementGotText.wrappingWidthProperty().bind(getStage(rootPane).widthProperty().subtract(50));
-
+        achievementGotText.wrappingWidthProperty().bind(gridWith.subtract(40)); // padding*2 + spacing + 10orsomething?
 
         achievementHBox.getChildren().addAll(achievementGotText, clickToCloseText);
         achievementHBox.setOnMouseClicked(e -> {
@@ -129,6 +129,7 @@ public class Controller {
 
     private void newGame() {
         int width  = currentDifficulty.getWidth();
+        gridWith.set(width * BUTTON_SIZE);
         int height = currentDifficulty.getHeight();
         int mines  = currentDifficulty.getMines();
         remainingLabel.setText(String.valueOf(mines));
@@ -263,15 +264,6 @@ public class Controller {
                 syncGridAndBoard();
             }
         }
-
-        /*if(primPressed && secPressed)
-            infoLabel.setText("both");
-        else if(primPressed)
-            infoLabel.setText("prim");
-        else if(secPressed)
-            infoLabel.setText("sec");
-        else
-            infoLabel.setText("");*/
     }
 
     private void syncGridAndBoard() {
@@ -297,7 +289,7 @@ public class Controller {
             Iterator<Achievement> newAchieveIter = board.getNewAchievements().iterator();
             while(newAchieveIter.hasNext()) {
                 Achievement curr = newAchieveIter.next();
-                addAchievement(curr.name());
+                addAchievement(curr.toString());
                 newAchieveIter.remove();
             }
         }
@@ -464,7 +456,7 @@ public class Controller {
     public void updateExpAchieveToggle() {
         expAchievementsEnabled = expAchieveToggle.isSelected();
         if(expAchievementsEnabled() && Achievement.EXP_ACHIEVE.isNotObtained()) {
-            addAchievement(Achievement.EXP_ACHIEVE.setObtainedAndGet().name());
+            addAchievement(Achievement.EXP_ACHIEVE.setObtainedAndGet().toString());
         }
     }
 
