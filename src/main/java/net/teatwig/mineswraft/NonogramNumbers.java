@@ -1,7 +1,11 @@
 package net.teatwig.mineswraft;
 
+import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.layout.GridPane;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,12 +77,14 @@ class NonogramNumbers {
         return gridPane;
     }
 
-    void applyButtonStyles(GridPane gridPane, boolean xNumbers) {
+    private void applyButtonStyles(GridPane gridPane, boolean xNumbers) {
         gridPane.getChildren().stream().forEach(child -> {
             Button b = (Button) child;
             b.setPrefSize(Controller.BUTTON_SIZE, Controller.BUTTON_SIZE);
             b.setMinSize(Controller.BUTTON_SIZE, Controller.BUTTON_SIZE);
             b.setMaxSize(Controller.BUTTON_SIZE, Controller.BUTTON_SIZE);
+            b.setPadding(Insets.EMPTY);
+            b.setFont(Font.font(null, FontWeight.NORMAL, 16));
             b.setStyle("-fx-border-style: "+(xNumbers?"hidden solid":"solid hidden")+
                     "; -fx-border-color: #DDD; -fx-border-size: 1px; -fx-background-radius: 0; -fx-background-color: #EFEFEF");
         });
@@ -93,7 +99,7 @@ class NonogramNumbers {
     }
 
     private <T> int getSize(List<List<T>> lists) {
-        return lists.stream().mapToInt(list -> list.size()).max().getAsInt();
+        return lists.stream().mapToInt(List::size).max().getAsInt();
     }
 
     private static Field[][] flipDiagonally(Field[][] fields) {
