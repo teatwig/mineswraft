@@ -44,6 +44,8 @@ public class Controller {
     @FXML
     private VBox structureVBox;
     @FXML
+    private GridPane nonoPane;
+    @FXML
     private GridPane gridPane;
     @FXML
     private Label infoLabel;
@@ -68,7 +70,7 @@ public class Controller {
     private Difficulty currentDifficulty, lastDifficulty; // TODO remove lastDifficulty because it's not needed any longer
     private IntegerProperty gridWith = new SimpleIntegerProperty();
 
-    private static final int BUTTON_SIZE = 25;
+    static final int BUTTON_SIZE = 25;
     private static final String STYLE_CLOSED = "-fx-background-radius: 0";
     private static final String STYLE_OPEN = "-fx-border-color: #DDD; -fx-border-size: 1px; -fx-background-radius: 0; -fx-background-color: #EFEFEF";
     private static final String STYLE_MINE = "-fx-border-color: #DDD; -fx-border-size: 1px; -fx-background-radius: 0; -fx-background-color: #E1E1E1";
@@ -142,52 +144,37 @@ public class Controller {
 
         board = new Board(width, height, mines, currentDifficulty.getType());
 
+        nonoPane.getChildren().clear();
         gridPane.getChildren().clear();
-        gridPane.setAlignment(Pos.CENTER);
 
         if(expNonogramModeEnabled) {
             board.initNonogramMode();
             NonogramNumbers numbers = new NonogramNumbers(board);
-            for (int y = 0; y < height; y++) {
-                for (int x = 0; x < width; x++) {
-                    Button btn = new Button();
-                    btn.setPrefSize(BUTTON_SIZE, BUTTON_SIZE);
-                    btn.setMinSize(BUTTON_SIZE, BUTTON_SIZE);
-                    btn.setMaxSize(BUTTON_SIZE, BUTTON_SIZE);
-                    btn.setFocusTraversable(false);
-                    btn.setStyle(STYLE_CLOSED);
-                    btn.setPadding(Insets.EMPTY);
-                    btn.setFont(Font.font(null, FontWeight.BOLD, 16));
-                    btn.setOnMouseReleased(this::mouseHandler);
-                    btn.setOnMousePressed(this::mouseHandler);
-                    btn.setOnMouseExited(e -> pressSource = null);
-                    btn.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
-                        primPressed = e.isPrimaryButtonDown();
-                        secPressed = e.isSecondaryButtonDown();
-                    });
-                    gridPane.add(btn, x, y);
-                }
-            }
-        } else {
-            for (int y = 0; y < height; y++) {
-                for (int x = 0; x < width; x++) {
-                    Button btn = new Button();
-                    btn.setPrefSize(BUTTON_SIZE, BUTTON_SIZE);
-                    btn.setMinSize(BUTTON_SIZE, BUTTON_SIZE);
-                    btn.setMaxSize(BUTTON_SIZE, BUTTON_SIZE);
-                    btn.setFocusTraversable(false);
-                    btn.setStyle(STYLE_CLOSED);
-                    btn.setPadding(Insets.EMPTY);
-                    btn.setFont(Font.font(null, FontWeight.BOLD, 16));
-                    btn.setOnMouseReleased(this::mouseHandler);
-                    btn.setOnMousePressed(this::mouseHandler);
-                    btn.setOnMouseExited(e -> pressSource = null);
-                    btn.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
-                        primPressed = e.isPrimaryButtonDown();
-                        secPressed = e.isSecondaryButtonDown();
-                    });
-                    gridPane.add(btn, x, y);
-                }
+            nonoPane.add(new Pane(), 0, 0);
+            nonoPane.add(numbers.getXNumberAsGridPane(), 1, 0);
+            nonoPane.add(numbers.getYNumberAsGridPane(), 0, 1);
+        }
+
+        nonoPane.add(gridPane, 1, 1);
+        gridPane.setAlignment(Pos.CENTER);
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                Button btn = new Button();
+                btn.setPrefSize(BUTTON_SIZE, BUTTON_SIZE);
+                btn.setMinSize(BUTTON_SIZE, BUTTON_SIZE);
+                btn.setMaxSize(BUTTON_SIZE, BUTTON_SIZE);
+                btn.setFocusTraversable(false);
+                btn.setStyle(STYLE_CLOSED);
+                btn.setPadding(Insets.EMPTY);
+                btn.setFont(Font.font(null, FontWeight.BOLD, 16));
+                btn.setOnMouseReleased(this::mouseHandler);
+                btn.setOnMousePressed(this::mouseHandler);
+                btn.setOnMouseExited(e -> pressSource = null);
+                btn.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
+                    primPressed = e.isPrimaryButtonDown();
+                    secPressed = e.isSecondaryButtonDown();
+                });
+                gridPane.add(btn, x, y);
             }
         }
 
@@ -310,7 +297,11 @@ public class Controller {
         } else if(board.isGameWon()) {
             Statistics.addGameResult(true, currentDifficulty, board.getTimePassed());
             gridPane.getChildren().stream().forEach(child -> {child.setOnMousePressed(null);child.setOnMouseReleased(null);});
-            infoLabel.setText("You're a winner!");
+            if(expNonogramModeEnabled) {
+                infoLabel.setText("You're a nono-winner!");
+            } else {
+                infoLabel.setText("You're a winner!");
+            }
         }
         Field[][] fields = board.getFields();
         ObservableList<Node> gridPaneChildren = gridPane.getChildren();
@@ -321,7 +312,7 @@ public class Controller {
         }
         remainingLabel.setText(String.valueOf(board.getRemainingMines()));
 
-        if(expAchievementsEnabled() && !board.getNewAchievements().isEmpty()) {
+        if(expAchievementsEnabled && !board.getNewAchievements().isEmpty()) {
             Iterator<Achievement> newAchieveIter = board.getNewAchievements().iterator();
             while(newAchieveIter.hasNext()) {
                 Achievement curr = newAchieveIter.next();
@@ -387,11 +378,15 @@ public class Controller {
     }
 
     private Alert confirmAlert(String title, String header) {
+        return confirmAlert(title, header, "");
+    }
+
+    private Alert confirmAlert(String title, String header, String content) {
         Alert alert = new Alert(Alert.AlertType.WARNING);
         alert.setTitle(title);
         setDialogIcon(alert);
         alert.setHeaderText(header);
-        alert.setContentText("The current game will be discarded and count as a lost game in the statistics.");
+        alert.setContentText("The current game will be discarded and count as a lost game in the statistics.\n"+content);
         alert.getButtonTypes().add(ButtonType.CANCEL);
         return alert;
     }
@@ -488,13 +483,12 @@ public class Controller {
     @FXML
     private void updateExpAchieveToggle() {
         expAchievementsEnabled = expAchieveToggle.isSelected();
-        if(expAchievementsEnabled() && Achievement.EXP_ACHIEVE.isObtained() == false) {
+        if(expAchievementsEnabled && Achievement.EXP_ACHIEVE.isObtained() == false) {
             addAchievement(Achievement.EXP_ACHIEVE.setObtainedAndGet());
         }
     }
 
-
-    static boolean expAchievementsEnabled() {
+    static boolean isExpAchievementsEnabled() {
         return expAchievementsEnabled;
     }
 
@@ -502,8 +496,15 @@ public class Controller {
     @FXML
     private void updateExpNonogramModeToggle() {
         expNonogramModeEnabled = expNonogramModeToggle.isSelected();
-        confirmAlert("New Game", "You've enabled Nonogram-Mode (experimental)!").showAndWait();
+        if(expNonogramModeEnabled) {
+            confirmAlert("New Game", "You've enabled Nonogram-Mode (experimental)!",
+                    "Statistics for this mode won't be saved.\nTry a Custom game for higher difficulty.").showAndWait();
+        }
         newGame();
+    }
+
+    static boolean isExpNonogramModeEnabled() {
+        return expNonogramModeEnabled;
     }
 
     public static Image[] gameIcon() {

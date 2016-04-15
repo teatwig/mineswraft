@@ -30,6 +30,11 @@ class Statistics {
     // TODO best times or maybe name entry?
 
     static void addGameResult(boolean won, Difficulty difficulty, Duration newTime) {
+        if(Controller.isExpNonogramModeEnabled()) {
+            System.out.println("Stats for Nonogram-Mode won't be saved with the normal ones, you cheater!");
+            return;
+        }
+
         int difType = difficulty.getType();
         if(difType != Difficulty.CUSTOM) {
             playedGames[difType] += 1;
@@ -65,7 +70,7 @@ class Statistics {
         content1_1.setAlignment(Pos.TOP_LEFT); // TODO doesn't work??
         VBox content1 = new VBox(content1_1);
 
-        if(Controller.expAchievementsEnabled()) {
+        if(Controller.isExpAchievementsEnabled()) {
             content1.getChildren().add(new Label(Achievement.allToString()));
         }
 
