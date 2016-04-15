@@ -60,7 +60,8 @@
                            </accelerator>
                         </RadioMenuItem>
                         <SeparatorMenuItem mnemonicParsing="false" />
-                        <RadioMenuItem fx:id="expAchieveToggle" mnemonicParsing="false" onAction="#updateExpAchieveToggle" text="Experiemental Achievements" />
+                        <RadioMenuItem fx:id="expAchieveToggle" mnemonicParsing="false" onAction="#updateExpAchieveToggle" text="Achievements (exp)" />
+                        <RadioMenuItem fx:id="expNonogramModeToggle" mnemonicParsing="false" onAction="#updateExpNonogramModeToggle" text="Nonogram-Mode (exp)" />
                      </items>
                 </Menu>
               </menus>

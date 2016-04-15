@@ -47,7 +47,8 @@ class Board {
         init(x_start, y_start, false);
     }
 
-    private void initNonogramMode() {
+    public void initNonogramMode() {
+        firstMoveDone = true;
         init(-3, -3, true); // could be 0 but value isn't used anyway
     }
 

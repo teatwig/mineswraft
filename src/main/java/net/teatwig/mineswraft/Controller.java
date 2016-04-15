@@ -59,6 +59,8 @@ public class Controller {
     private CheckMenuItem colorToggle;
     @FXML
     private RadioMenuItem expAchieveToggle;
+    @FXML
+    private RadioMenuItem expNonogramModeToggle;
 
     private Board board;
     private Toggle currentDifficultyToggle;
@@ -93,7 +95,8 @@ public class Controller {
     /**
      * Loads Statistic from file, sets Difficulty and starts a new game.
      */
-    public void initialize() {
+    @FXML
+    private void initialize() {
         Statistics.load();
 
         currentDifficultyToggle = difficultyToggles.getSelectedToggle();
@@ -137,43 +140,71 @@ public class Controller {
         remainingLabel.setText(String.valueOf(mines));
         infoLabel.setText("");
 
+        board = new Board(width, height, mines, currentDifficulty.getType());
+
         gridPane.getChildren().clear();
-        for(int y=0; y<height; y++) {
-            for(int x=0; x<width; x++) {
-                Button btn = new Button();
-                btn.setPrefSize(BUTTON_SIZE, BUTTON_SIZE);
-                btn.setMinSize(BUTTON_SIZE, BUTTON_SIZE);
-                btn.setMaxSize(BUTTON_SIZE, BUTTON_SIZE);
-                btn.setFocusTraversable(false);
-                btn.setStyle(STYLE_CLOSED);
-                btn.setPadding(Insets.EMPTY);
-                btn.setFont(Font.font(null, FontWeight.BOLD, 16));
-                btn.setOnMouseReleased(this::mouseHandler);
-                btn.setOnMousePressed(this::mouseHandler);
-                btn.setOnMouseExited(e -> pressSource = null);
-                btn.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
-                    primPressed =  e.isPrimaryButtonDown();
-                    secPressed =  e.isSecondaryButtonDown();
-                });
-                gridPane.add(btn, x, y);
-                gridPane.setAlignment(Pos.CENTER);
+        gridPane.setAlignment(Pos.CENTER);
+
+        if(expNonogramModeEnabled) {
+            board.initNonogramMode();
+            for (int y = 0; y < height; y++) {
+                for (int x = 0; x < width; x++) {
+                    Button btn = new Button();
+                    btn.setPrefSize(BUTTON_SIZE, BUTTON_SIZE);
+                    btn.setMinSize(BUTTON_SIZE, BUTTON_SIZE);
+                    btn.setMaxSize(BUTTON_SIZE, BUTTON_SIZE);
+                    btn.setFocusTraversable(false);
+                    btn.setStyle(STYLE_CLOSED);
+                    btn.setPadding(Insets.EMPTY);
+                    btn.setFont(Font.font(null, FontWeight.BOLD, 16));
+                    btn.setOnMouseReleased(this::mouseHandler);
+                    btn.setOnMousePressed(this::mouseHandler);
+                    btn.setOnMouseExited(e -> pressSource = null);
+                    btn.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
+                        primPressed = e.isPrimaryButtonDown();
+                        secPressed = e.isSecondaryButtonDown();
+                    });
+                    gridPane.add(btn, x, y);
+                }
+            }
+        } else {
+            for (int y = 0; y < height; y++) {
+                for (int x = 0; x < width; x++) {
+                    Button btn = new Button();
+                    btn.setPrefSize(BUTTON_SIZE, BUTTON_SIZE);
+                    btn.setMinSize(BUTTON_SIZE, BUTTON_SIZE);
+                    btn.setMaxSize(BUTTON_SIZE, BUTTON_SIZE);
+                    btn.setFocusTraversable(false);
+                    btn.setStyle(STYLE_CLOSED);
+                    btn.setPadding(Insets.EMPTY);
+                    btn.setFont(Font.font(null, FontWeight.BOLD, 16));
+                    btn.setOnMouseReleased(this::mouseHandler);
+                    btn.setOnMousePressed(this::mouseHandler);
+                    btn.setOnMouseExited(e -> pressSource = null);
+                    btn.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
+                        primPressed = e.isPrimaryButtonDown();
+                        secPressed = e.isSecondaryButtonDown();
+                    });
+                    gridPane.add(btn, x, y);
+                }
             }
         }
 
-        board = new Board(width, height, mines, currentDifficulty.getType());
         startTimerUpdateThread();
 
         autoResizeStage();
     }
 
-    public void newGameAlert() {
+    @FXML
+    private void newGameAlert() {
         if(!board.isGameInProgress() || confirmDialogOK(NEW_GAME)) {
             // using short-circuit evaluation for success!
             newGame();
         }
     }
 
-    public void openStatisticsDialog() {
+    @FXML
+    private void openStatisticsDialog() {
         Statistics.showStatisticsDialog();
     }
 
@@ -181,6 +212,7 @@ public class Controller {
         Statistics.addGameResult(false, currentDifficulty, Duration.ZERO);
     }
 
+    @FXML
     public void quit(Event event) {
         if(event != null) {
             event.consume();
@@ -191,6 +223,7 @@ public class Controller {
         }
     }
 
+    @FXML
     public void difficultyChangeHandler() {
         Toggle newToggle = difficultyToggles.getSelectedToggle();
         // happens when Accelerator for currentDifficultyToggle is pressed
@@ -326,7 +359,8 @@ public class Controller {
         }
     }
 
-    public void customDifficultyHandler() {
+    @FXML
+    private void customDifficultyHandler() {
         Optional<int[]> customData = customDialog().showAndWait();
         if(customData.isPresent()) {
             int[] customArr = customData.get();
@@ -449,21 +483,31 @@ public class Controller {
             st.sizeToScene();
             System.out.printf("NEW w:%f h:%f minW: %f minH:%f maxW: %s maxH: %s%n",
                     st.getWidth(), st.getHeight(), st.getMinWidth(), st.getMinHeight(), st.getMaxWidth()==Double.MAX_VALUE?"MAX":String.valueOf(st.getMaxWidth()), st.getMaxHeight()==Double.MAX_VALUE?"MAX":String.valueOf(st.getMaxHeight()));
-        } catch(NullPointerException ex) {
+        } catch(NullPointerException ignored) {
 
         }
     }
 
     private static boolean expAchievementsEnabled = false;
-    public void updateExpAchieveToggle() {
+    @FXML
+    private void updateExpAchieveToggle() {
         expAchievementsEnabled = expAchieveToggle.isSelected();
         if(expAchievementsEnabled() && Achievement.EXP_ACHIEVE.isObtained() == false) {
             addAchievement(Achievement.EXP_ACHIEVE.setObtainedAndGet());
         }
     }
 
+
     static boolean expAchievementsEnabled() {
         return expAchievementsEnabled;
+    }
+
+    private static boolean expNonogramModeEnabled = false;
+    @FXML
+    private void updateExpNonogramModeToggle() {
+        expNonogramModeEnabled = expNonogramModeToggle.isSelected();
+        confirmAlert("New Game", "You've enabled Nonogram-Mode (experimental)!").showAndWait();
+        newGame();
     }
 
     public static Image[] gameIcon() {
