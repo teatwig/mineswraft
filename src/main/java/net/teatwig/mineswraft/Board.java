@@ -1,5 +1,8 @@
 package net.teatwig.mineswraft;
 
+import lombok.AccessLevel;
+import lombok.Getter;
+
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -17,12 +20,15 @@ import static net.teatwig.mineswraft.Achievement.*;
 class Board {
     private Field[][] board;
     private int width, height, mines;
+    @Getter(AccessLevel.PACKAGE)
     private boolean firstMoveDone = false;
-    private boolean gameOver = false;
-    private boolean gameWon = false;
+    @Getter(AccessLevel.PACKAGE)
+    private boolean gameOver = false, gameWon = false;
+    @Getter(AccessLevel.PACKAGE)
     private int remainingMines;
     private LocalDateTime startTime;
     private int difficultyType = -1;
+    @Getter(AccessLevel.PACKAGE)
     private Set<Achievement> newAchievements = new HashSet<>();
     private boolean noFieldMarked = true; // Achievement
 
@@ -234,18 +240,6 @@ class Board {
         }
     }
 
-    boolean isGameOver() {
-        return gameOver;
-    }
-
-    boolean isGameWon() {
-        return gameWon;
-    }
-
-    boolean isFirstMoveDone() {
-        return firstMoveDone;
-    }
-
     boolean isGameInProgress() {
         return firstMoveDone && !gameOver && !gameWon;
     }
@@ -258,28 +252,12 @@ class Board {
         }
     }
 
-    Set<Achievement> getNewAchievements() {
-        return newAchievements;
-    }
-
-    int getRemainingMines() {
-        return remainingMines;
-    }
-
     Field[][] getFields() {
         return board;
     }
 
     Field getField(int x_cord, int y_cord) {
         return board[y_cord][x_cord];
-    }
-
-    public int getWidth() {
-        return width;
-    }
-
-    public int getHeight() {
-        return height;
     }
 
     public String xRayBoardToString() {
