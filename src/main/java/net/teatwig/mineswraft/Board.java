@@ -51,15 +51,13 @@ class Board {
                 .map(p -> Coordinate.of(p%width, p/width))
                 .filter(otherCoordinate -> notAdjacentToOrStart(startCoordinate, otherCoordinate))
                 .limit(mines)
-                .forEach(coordinate -> board[coordinate.getY()][coordinate.getX()] = new Field());
+                .forEach(coordinate -> setField(coordinate, new Field()));
         // init remaining
-        for (int y_cord=0; y_cord<height; y_cord++) {
-            for (int x_cord=0; x_cord<width; x_cord++) {
-                if(board[y_cord][x_cord] == null) { // isn't already init as mine
-                    board[y_cord][x_cord] = new Field(calcSurroundingMines(Coordinate.of(x_cord, y_cord)));
-                }
-            }
-        }
+        minePositions.stream()
+                .map(p -> Coordinate.of(p%width, p/width))
+                .filter(coordinate -> getField(coordinate) == null)
+                .forEach(coordinate -> setField(coordinate, new Field(calcSurroundingMines(coordinate))));
+
         firstMoveDone = true;
         startTime = LocalDateTime.now();
     }
@@ -69,13 +67,13 @@ class Board {
     }
 
     private int calcSurroundingMines(Coordinate coordinate) {
-        return coordinate.streamOfSurrounding().mapToInt(surrCoordinate -> fieldIsMineToInt(surrCoordinate)).sum();
+        return coordinate.getStreamOfSurrounding().mapToInt(surrCoordinate -> fieldIsMineToInt(surrCoordinate)).sum();
     }
 
     private int fieldIsMineToInt(Coordinate coordinate) {
         Field f;
         try {
-            f = board[coordinate.getY()][coordinate.getX()];
+            f = getField(coordinate);
         } catch (ArrayIndexOutOfBoundsException ex) {
             return 0;
         }
@@ -98,8 +96,8 @@ class Board {
         }
         if(mark) {
             try {
-                board[coordinate.getY()][coordinate.getX()].toggleMarking();
-                if(board[coordinate.getY()][coordinate.getX()].isMarked())
+                getField(coordinate).toggleMarking();
+                if(getField(coordinate).isMarked())
                     remainingMines -= 1;
                 else
                     remainingMines += 1;
@@ -129,7 +127,7 @@ class Board {
 
     private void openSpace(Coordinate coordinate, boolean auto, boolean chord) {
         try {
-            Field f = board[coordinate.getY()][coordinate.getX()];
+            Field f = getField(coordinate);
             if(f.isOpen()) {
                 return;
             } else if(!f.isMarked()) {
@@ -156,17 +154,17 @@ class Board {
     }
 
     private void openSurroundingMines(Coordinate coordinate, boolean chord) {
-        coordinate.streamOfSurrounding().forEach(surrCoordinate -> openSpace(surrCoordinate, false, chord));
+        coordinate.getStreamOfSurrounding().forEach(surrCoordinate -> openSpace(surrCoordinate, false, chord));
     }
 
     private boolean allPotentialSurroundingMarked(Coordinate coordinate) {
-        int surroundingMarked = coordinate.streamOfSurrounding().mapToInt(this::isMarkedTo1).sum();
-        return surroundingMarked == board[coordinate.getY()][coordinate.getX()].getSurroundingMines();
+        int surroundingMarked = coordinate.getStreamOfSurrounding().mapToInt(this::isMarkedTo1).sum();
+        return surroundingMarked == getField(coordinate).getSurroundingMines();
     }
 
     private int isMarkedTo1(Coordinate coordinate) {
         try {
-            if(board[coordinate.getY()][coordinate.getX()].isMarked())
+            if(getField(coordinate).isMarked())
                 return 1;
         } catch (ArrayIndexOutOfBoundsException ex) {
             // another on of those
@@ -238,6 +236,10 @@ class Board {
 
     Field getField(Coordinate coordinate) {
         return board[coordinate.getY()][coordinate.getX()];
+    }
+
+    private void setField(Coordinate coordinate, Field field) {
+        board[coordinate.getY()][coordinate.getX()] = field;
     }
 
     public String xRayBoardToString() {

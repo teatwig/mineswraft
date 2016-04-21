@@ -280,11 +280,10 @@ public class Controller {
             gridPane.getChildren().stream().forEach(child -> {child.setOnMousePressed(null);child.setOnMouseReleased(null);});
             infoLabel.setText("You're a winner!");
         }
-        Field[][] fields = board.getFields();
         ObservableList<Node> gridPaneChildren = gridPane.getChildren();
-        for(int y=0; y<fields.length; y++) {
-            for(int x=0; x<fields[y].length; x++) {
-                syncFieldAndChild(fields[y][x], (Button) gridPaneChildren.get(y*fields[y].length+x));
+        for(int y=0; y<currentDifficulty.getWidth(); y++) {
+            for(int x=0; x<currentDifficulty.getHeight(); x++) {
+                syncFieldAndChild(board.getField(Coordinate.of(x, y)), (Button) gridPaneChildren.get(y*currentDifficulty.getWidth()+x));
             }
         }
         remainingLabel.setText(String.valueOf(board.getRemainingMines()));
