@@ -97,26 +97,17 @@ class Statistics {
     static void load() {
         try {
             byte[] inBytes = Files.readAllBytes(getStatsFilePath());
-            double statsFileVersion = 0;
-            ByteArrayInputStream bais;
-            try {
-                statsFileVersion = Double.parseDouble(new String(Arrays.copyOfRange(inBytes, 1, 4)));
-                byte[] statBytes = Arrays.copyOfRange(inBytes, 5, inBytes.length);
-                IntStream.range(0, statBytes.length).forEach(pos -> statBytes[pos] = (byte)(statBytes[pos]^pos%256));
-                bais = new ByteArrayInputStream(Base64.getDecoder().decode(statBytes));
-            } catch (NumberFormatException ex) {
-                // v1.0 didn't save version number unencoded
-                bais = new ByteArrayInputStream(Base64.getDecoder().decode(inBytes));
-            }
-            ObjectInputStream in = new ObjectInputStream(bais);
-            if(statsFileVersion == 0) {
-                // v1.0 didn't save version number unencoded
-                statsFileVersion = in.readDouble();
-            }
 
+            double statsFileVersion = Double.parseDouble(new String(Arrays.copyOfRange(inBytes, 1, 4)));
             if(statsFileVersion != CURRENT_STATS_VERSION) {
                 Files.copy(getStatsFilePath(), getStatsFilePath(statsFileVersion), StandardCopyOption.REPLACE_EXISTING);
+                System.out.println("Created backup of Version "+statsFileVersion+" stats.");
             }
+
+            byte[] statBytes = Arrays.copyOfRange(inBytes, 5, inBytes.length);
+            IntStream.range(0, statBytes.length).forEach(pos -> statBytes[pos] = (byte)(statBytes[pos]^pos%256));
+            ByteArrayInputStream bais = new ByteArrayInputStream(Base64.getDecoder().decode(statBytes));
+            ObjectInputStream in = new ObjectInputStream(bais);
 
             // all Versions so far
             playedGames = (int[]) in.readObject();
@@ -130,7 +121,7 @@ class Statistics {
 
             in.close();
             bais.close();
-        } catch (NoSuchFileException ex) {
+        } catch (NumberFormatException | NoSuchFileException ex) {
             System.out.println("No stats loaded. File "+getStatsFilePath()+" will be created on quit.");
         } catch (IOException | ClassNotFoundException ex) {
             ex.printStackTrace();
