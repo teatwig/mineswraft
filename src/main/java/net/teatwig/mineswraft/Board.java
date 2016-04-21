@@ -37,7 +37,7 @@ class Board {
         this.difficultyType = difficultyType;
     }
 
-    Board(int width, int height, int mines) {
+    Board(int width, int height, int mines) { // currently only used in MainTerm because it doesnt specify a difficulty
         this.width = width; this.height = height; this.mines = mines;
         board = new Field[height][width];
         remainingMines = mines;
@@ -49,7 +49,7 @@ class Board {
         // init mines
         minePositions.stream()
                 .map(p -> Coordinate.of(p%width, p/width))
-                .filter(otherCoordinate -> notAdjacentToOrStart(startCoordinate, otherCoordinate))
+                .filter(otherCoordinate -> startCoordinate.isNotSurroundedBy(otherCoordinate))
                 .limit(mines)
                 .forEach(coordinate -> setField(coordinate, new Field()));
         // init remaining
@@ -62,12 +62,8 @@ class Board {
         startTime = LocalDateTime.now();
     }
 
-    private boolean notAdjacentToOrStart(Coordinate start, Coordinate other) {
-        return other.getX() < start.getX() - 1 || other.getX() > start.getX() + 1 || other.getY() < start.getY() - 1 || other.getY() > start.getY() + 1;
-    }
-
     private int calcSurroundingMines(Coordinate coordinate) {
-        return coordinate.getStreamOfSurrounding().mapToInt(surrCoordinate -> fieldIsMineToInt(surrCoordinate)).sum();
+        return coordinate.getStreamOfSurrounding().mapToInt(this::fieldIsMineToInt).sum();
     }
 
     private int fieldIsMineToInt(Coordinate coordinate) {
@@ -228,10 +224,6 @@ class Board {
         } else {
             return Duration.between(startTime, LocalDateTime.now());
         }
-    }
-
-    Field[][] getFields() {
-        return board;
     }
 
     Field getField(Coordinate coordinate) {
