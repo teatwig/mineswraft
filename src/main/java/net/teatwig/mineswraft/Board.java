@@ -9,8 +9,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static net.teatwig.mineswraft.Achievement.*;
-
 /**
  * Created by timo on 03.03.2016.
  */
@@ -25,9 +23,6 @@ class Board {
     private int remainingMines;
     private LocalDateTime startTime;
     private int difficultyType = -1;
-    @Getter(AccessLevel.PACKAGE)
-    private Set<Achievement> newAchievements = new HashSet<>();
-    private boolean noFieldMarked = true; // Achievement
 
     Board(int width, int height, int mines, int difficultyType) {
         this(width, height, mines);
@@ -94,8 +89,6 @@ class Board {
                     remainingMines -= 1;
                 else
                     remainingMines += 1;
-
-                noFieldMarked = false;
             } catch (ArrayIndexOutOfBoundsException ex) {
                 ex.printStackTrace();
                 // didn't handle possible errors down there either
@@ -109,8 +102,6 @@ class Board {
         if(onlyMinesLeft()) {
             remainingMines = 0;
             gameWon = true;
-
-            handleAchievements();
         }
     }
 
@@ -167,41 +158,6 @@ class Board {
 
     private boolean onlyMinesLeft() {
         return Arrays.stream(board).flatMap(Arrays::stream).allMatch(f -> f.isOpen() || f.isMine());
-    }
-
-    private void handleAchievements() {
-        handleAchievementsWin();
-        handleAchievementsNoMark();
-    }
-
-    private void handleAchievementsWin() {
-        switch (difficultyType) {
-            case Difficulty.EASY:
-                EASY_WIN.addToIfNotObtained(newAchievements);
-                break;
-            case Difficulty.MEDIUM:
-                MEDIUM_WIN.addToIfNotObtained(newAchievements);
-                break;
-            case Difficulty.HARD:
-                HARD_WIN.addToIfNotObtained(newAchievements);
-                break;
-        }
-    }
-
-    private void handleAchievementsNoMark() {
-        if(noFieldMarked) {
-            switch (difficultyType) {
-                case Difficulty.EASY:
-                    EASY_NOMARK.addToIfNotObtained(newAchievements);
-                    break;
-                case Difficulty.MEDIUM:
-                    MEDIUM_NOMARK.addToIfNotObtained(newAchievements);
-                    break;
-                case Difficulty.HARD:
-                    HARD_NOMARK.addToIfNotObtained(newAchievements);
-                    break;
-            }
-        }
     }
 
     boolean isGameInProgress() {

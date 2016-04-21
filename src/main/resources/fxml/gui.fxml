@@ -59,8 +59,6 @@
                               <KeyCodeCombination alt="UP" code="DIGIT0" control="UP" meta="UP" shift="UP" shortcut="ANY" />
                            </accelerator>
                         </RadioMenuItem>
-                        <SeparatorMenuItem mnemonicParsing="false" />
-                        <RadioMenuItem fx:id="expAchieveToggle" mnemonicParsing="false" onAction="#updateExpAchieveToggle" text="Experiemental Achievements" />
                      </items>
                 </Menu>
               </menus>
