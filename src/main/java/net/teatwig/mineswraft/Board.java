@@ -5,10 +5,7 @@ import lombok.Getter;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -169,14 +166,7 @@ class Board {
     }
 
     private boolean onlyMinesLeft() {
-        for(Field[] f_arr : board) {
-            for(Field f : f_arr) {
-                if(!f.isOpen() && !f.isMine()) {
-                    return false;
-                }
-            }
-        }
-        return true;
+        return Arrays.stream(board).flatMap(Arrays::stream).allMatch(f -> f.isOpen() || f.isMine());
     }
 
     private void handleAchievements() {
@@ -224,6 +214,10 @@ class Board {
         } else {
             return Duration.between(startTime, LocalDateTime.now());
         }
+    }
+
+    Field getField(int positionInFlatArray) {
+        return board[positionInFlatArray/width][positionInFlatArray%width];
     }
 
     Field getField(Coordinate coordinate) {

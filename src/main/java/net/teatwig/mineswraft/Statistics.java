@@ -57,9 +57,9 @@ class Statistics {
         Controller.setDialogIcon(statisticsDialog);
         statisticsDialog.setTitle("Statistics");
         HBox content1_1 = new HBox(
-                new Label(statisticsStrFor(Difficulty.EASY)),
-                new Label(statisticsStrFor(Difficulty.MEDIUM)),
-                new Label(statisticsStrFor(Difficulty.HARD))
+            new Label(statisticsStrFor(Difficulty.EASY)),
+            new Label(statisticsStrFor(Difficulty.MEDIUM)),
+            new Label(statisticsStrFor(Difficulty.HARD))
         );
         content1_1.setSpacing(20);
         content1_1.setAlignment(Pos.TOP_LEFT); // TODO doesn't work??

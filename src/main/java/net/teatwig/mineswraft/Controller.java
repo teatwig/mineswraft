@@ -33,6 +33,7 @@ import javafx.stage.Stage;
 
 import java.time.Duration;
 import java.util.*;
+import java.util.stream.IntStream;
 
 /**
  * Created by timo on 03.03.2016.
@@ -138,27 +139,25 @@ public class Controller {
         infoLabel.setText("");
 
         gridPane.getChildren().clear();
-        for(int y=0; y<height; y++) {
-            for(int x=0; x<width; x++) {
-                Button btn = new Button();
-                btn.setPrefSize(BUTTON_SIZE, BUTTON_SIZE);
-                btn.setMinSize(BUTTON_SIZE, BUTTON_SIZE);
-                btn.setMaxSize(BUTTON_SIZE, BUTTON_SIZE);
-                btn.setFocusTraversable(false);
-                btn.setStyle(STYLE_CLOSED);
-                btn.setPadding(Insets.EMPTY);
-                btn.setFont(Font.font(null, FontWeight.BOLD, 16));
-                btn.setOnMouseReleased(this::mouseHandler);
-                btn.setOnMousePressed(this::mouseHandler);
-                btn.setOnMouseExited(e -> pressSource = null);
-                btn.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
-                    primPressed =  e.isPrimaryButtonDown();
-                    secPressed =  e.isSecondaryButtonDown();
-                });
-                gridPane.add(btn, x, y);
-                gridPane.setAlignment(Pos.CENTER);
-            }
-        }
+        IntStream.range(0, height).forEach(y -> IntStream.range(0, width).forEach(x -> {
+            Button btn = new Button();
+            btn.setPrefSize(BUTTON_SIZE, BUTTON_SIZE);
+            btn.setMinSize(BUTTON_SIZE, BUTTON_SIZE);
+            btn.setMaxSize(BUTTON_SIZE, BUTTON_SIZE);
+            btn.setFocusTraversable(false);
+            btn.setStyle(STYLE_CLOSED);
+            btn.setPadding(Insets.EMPTY);
+            btn.setFont(Font.font(null, FontWeight.BOLD, 16));
+            btn.setOnMouseReleased(this::mouseHandler);
+            btn.setOnMousePressed(this::mouseHandler);
+            btn.setOnMouseExited(e -> pressSource = null);
+            btn.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
+                primPressed =  e.isPrimaryButtonDown();
+                secPressed =  e.isSecondaryButtonDown();
+            });
+            gridPane.add(btn, x, y);
+            gridPane.setAlignment(Pos.CENTER);
+        }));
 
         board = new Board(width, height, mines, currentDifficulty.getType());
         startTimerUpdateThread();
@@ -270,22 +269,28 @@ public class Controller {
         }
     }
 
+    private void removeMouseHandlersFromGridPane() {
+        gridPane.getChildren().stream().forEach(child -> {
+            child.setOnMousePressed(null);
+            child.setOnMouseReleased(null);
+        });
+    }
+
     private void syncGridAndBoard() {
         if(board.isGameOver()) {
             Statistics.addGameResult(false, currentDifficulty, Duration.ZERO);
-            gridPane.getChildren().stream().forEach(child -> {child.setOnMousePressed(null);child.setOnMouseReleased(null);});
+            removeMouseHandlersFromGridPane();
             infoLabel.setText("GAME OVER");
         } else if(board.isGameWon()) {
             Statistics.addGameResult(true, currentDifficulty, board.getTimePassed());
-            gridPane.getChildren().stream().forEach(child -> {child.setOnMousePressed(null);child.setOnMouseReleased(null);});
+            removeMouseHandlersFromGridPane();
             infoLabel.setText("You're a winner!");
         }
         ObservableList<Node> gridPaneChildren = gridPane.getChildren();
-        for(int y=0; y<currentDifficulty.getWidth(); y++) {
-            for(int x=0; x<currentDifficulty.getHeight(); x++) {
-                syncFieldAndChild(board.getField(Coordinate.of(x, y)), (Button) gridPaneChildren.get(y*currentDifficulty.getWidth()+x));
-            }
-        }
+        IntStream.range(0, gridPaneChildren.size()).forEach(i ->
+            syncFieldAndChild(board.getField(i), (Button) gridPaneChildren.get(i))
+        );
+
         remainingLabel.setText(String.valueOf(board.getRemainingMines()));
 
         if(expAchievementsEnabled() && !board.getNewAchievements().isEmpty()) {
