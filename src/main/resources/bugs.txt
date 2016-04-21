@@ -8,3 +8,5 @@ TODO gamemode where the user can uprade to a bigger field after win? maybe story
 displayed time lower than win time
 
 In case of doubt, remember that x- and y-chord are inversed on the board.
+
+TODO => for2 loop in into to stream

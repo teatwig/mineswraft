@@ -248,21 +248,23 @@ public class Controller {
         if(event == MOUSE_PRESSED) {
             pressSource = e.getSource();
         }
-        int x_cord = GridPane.getColumnIndex((Node) e.getSource());
-        int y_cord = GridPane.getRowIndex((Node) e.getSource());
+        Coordinate coordinate = Coordinate.of(
+            GridPane.getColumnIndex((Node) e.getSource()),
+            GridPane.getRowIndex((Node) e.getSource())
+        );
 
-        if (e.isSecondaryButtonDown() && board.isFirstMoveDone() && !board.getField(x_cord, y_cord).isOpen()) {
-            board.toggleMarking(x_cord, y_cord);
+        if (e.isSecondaryButtonDown() && board.isFirstMoveDone() && !board.getField(coordinate).isOpen()) {
+            board.toggleMarking(coordinate);
             syncGridAndBoard();
         } else if(pressSource != null) {
             // openField && (doubleClick || release && (middle || both))
-            if (board.isFirstMoveDone() && board.getField(x_cord, y_cord).isOpen()
+            if (board.isFirstMoveDone() && board.getField(coordinate).isOpen()
                     && ((e.getClickCount() == 2 && button == PRIMARY)
                     || event == MOUSE_RELEASED && (button == MIDDLE || (primPressed && secPressed)))) {
-                board.chord(x_cord, y_cord);
+                board.chord(coordinate);
                 syncGridAndBoard();
             } else if (event == MOUSE_RELEASED && button == PRIMARY && secPressed == false) {
-                board.click(x_cord, y_cord);
+                board.click(coordinate);
                 syncGridAndBoard();
             }
         }
