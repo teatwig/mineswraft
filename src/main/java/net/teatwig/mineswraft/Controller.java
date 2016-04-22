@@ -16,7 +16,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseButton;
 import static javafx.scene.input.MouseButton.*;
@@ -25,14 +24,13 @@ import static javafx.scene.input.MouseEvent.*;
 
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
-import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 import java.time.Duration;
 import java.util.*;
+import java.util.stream.IntStream;
 
 /**
  * Created by timo on 03.03.2016.
@@ -59,8 +57,6 @@ public class Controller {
     private RadioMenuItem customToggle;
     @FXML
     private CheckMenuItem colorToggle;
-    @FXML
-    private RadioMenuItem expAchieveToggle;
     @FXML
     private RadioMenuItem expNonogramModeToggle;
 
@@ -107,33 +103,6 @@ public class Controller {
         newGame();
     }
 
-    private void addAchievement(Achievement achievement) {
-        String name = achievement.toString();
-
-        HBox achievementHBox = new HBox();
-        achievementHBox.setStyle("-fx-background-color: #39f");
-        achievementHBox.setPadding(new Insets(10));
-        achievementHBox.setSpacing(10);
-        achievementHBox.setAlignment(Pos.CENTER);
-        achievementHBox.setEffect(new DropShadow(5, Color.valueOf("black")));
-
-        Text achievementGotText = new Text("You've got the "+name+" achievement!");
-        Text clickToCloseText = new Text("X");
-        clickToCloseText.setFont(Font.font(null, FontWeight.BOLD, 20));
-        clickToCloseText.setFill(Paint.valueOf("#CCC"));
-
-        achievementGotText.wrappingWidthProperty().bind(gridWith.subtract(40)); // padding*2 + spacing + 10orsomething?
-
-        achievementHBox.getChildren().addAll(achievementGotText, clickToCloseText);
-        achievementHBox.setOnMouseClicked(e -> {
-            structureVBox.getChildren().remove(achievementHBox);
-            autoResizeStage();
-        });
-
-        structureVBox.getChildren().add(achievementHBox);
-        autoResizeStage();
-    }
-
     private void newGame() {
         int width  = currentDifficulty.getWidth();
         gridWith.set(width * BUTTON_SIZE);
@@ -151,32 +120,30 @@ public class Controller {
             board.initNonogramMode();
             NonogramNumbers numbers = new NonogramNumbers(board);
             nonoPane.add(new Pane(), 0, 0);
-            nonoPane.add(numbers.getXNumberAsGridPane(), 1, 0);
-            nonoPane.add(numbers.getYNumberAsGridPane(), 0, 1);
+            nonoPane.add(numbers.getColNumberAsGridPane(), 1, 0);
+            nonoPane.add(numbers.getRowNumberAsGridPane(), 0, 1);
         }
 
         nonoPane.add(gridPane, 1, 1);
         gridPane.setAlignment(Pos.CENTER);
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                Button btn = new Button();
-                btn.setPrefSize(BUTTON_SIZE, BUTTON_SIZE);
-                btn.setMinSize(BUTTON_SIZE, BUTTON_SIZE);
-                btn.setMaxSize(BUTTON_SIZE, BUTTON_SIZE);
-                btn.setFocusTraversable(false);
-                btn.setStyle(STYLE_CLOSED);
-                btn.setPadding(Insets.EMPTY);
-                btn.setFont(Font.font(null, FontWeight.BOLD, 16));
-                btn.setOnMouseReleased(this::mouseHandler);
-                btn.setOnMousePressed(this::mouseHandler);
-                btn.setOnMouseExited(e -> pressSource = null);
-                btn.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
-                    primPressed = e.isPrimaryButtonDown();
-                    secPressed = e.isSecondaryButtonDown();
-                });
-                gridPane.add(btn, x, y);
-            }
-        }
+        IntStream.range(0, height).forEach(y -> IntStream.range(0, width).forEach(x -> {
+            Button btn = new Button();
+            btn.setPrefSize(BUTTON_SIZE, BUTTON_SIZE);
+            btn.setMinSize(BUTTON_SIZE, BUTTON_SIZE);
+            btn.setMaxSize(BUTTON_SIZE, BUTTON_SIZE);
+            btn.setFocusTraversable(false);
+            btn.setStyle(STYLE_CLOSED);
+            btn.setPadding(Insets.EMPTY);
+            btn.setFont(Font.font(null, FontWeight.BOLD, 16));
+            btn.setOnMouseReleased(this::mouseHandler);
+            btn.setOnMousePressed(this::mouseHandler);
+            btn.setOnMouseExited(e -> pressSource = null);
+            btn.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
+                primPressed =  e.isPrimaryButtonDown();
+                secPressed =  e.isSecondaryButtonDown();
+            });
+            gridPane.add(btn, x, y);
+        }));
 
         startTimerUpdateThread();
 
@@ -269,57 +236,54 @@ public class Controller {
         if(event == MOUSE_PRESSED) {
             pressSource = e.getSource();
         }
-        int x_cord = GridPane.getColumnIndex((Node) e.getSource());
-        int y_cord = GridPane.getRowIndex((Node) e.getSource());
+        Coordinate coordinate = Coordinate.of(
+            GridPane.getColumnIndex((Node) e.getSource()),
+            GridPane.getRowIndex((Node) e.getSource())
+        );
 
-        if (e.isSecondaryButtonDown() && board.isFirstMoveDone() && !board.getField(x_cord, y_cord).isOpen()) {
-            board.toggleMarking(x_cord, y_cord);
+        if (e.isSecondaryButtonDown() && board.isFirstMoveDone() && !board.getField(coordinate).isOpen()) {
+            board.toggleMarking(coordinate);
             syncGridAndBoard();
         } else if(pressSource != null) {
             // openField && (doubleClick || release && (middle || both))
-            if (board.isFirstMoveDone() && board.getField(x_cord, y_cord).isOpen()
+            if (board.isFirstMoveDone() && board.getField(coordinate).isOpen()
                     && ((e.getClickCount() == 2 && button == PRIMARY)
                     || event == MOUSE_RELEASED && (button == MIDDLE || (primPressed && secPressed)))) {
-                board.chord(x_cord, y_cord);
+                board.chord(coordinate);
                 syncGridAndBoard();
             } else if (event == MOUSE_RELEASED && button == PRIMARY && secPressed == false) {
-                board.click(x_cord, y_cord);
+                board.click(coordinate);
                 syncGridAndBoard();
             }
         }
     }
 
+    private void removeMouseHandlersFromGridPane() {
+        gridPane.getChildren().stream().forEach(child -> {
+            child.setOnMousePressed(null);
+            child.setOnMouseReleased(null);
+        });
+    }
+
     private void syncGridAndBoard() {
         if(board.isGameOver()) {
             Statistics.addGameResult(false, currentDifficulty, Duration.ZERO);
-            gridPane.getChildren().stream().forEach(child -> {child.setOnMousePressed(null);child.setOnMouseReleased(null);});
+            removeMouseHandlersFromGridPane();
             infoLabel.setText("GAME OVER");
         } else if(board.isGameWon()) {
             Statistics.addGameResult(true, currentDifficulty, board.getTimePassed());
-            gridPane.getChildren().stream().forEach(child -> {child.setOnMousePressed(null);child.setOnMouseReleased(null);});
+            removeMouseHandlersFromGridPane();
             if(expNonogramModeEnabled) {
                 infoLabel.setText("You're a nono-winner!");
             } else {
                 infoLabel.setText("You're a winner!");
             }
         }
-        Field[][] fields = board.getFields();
         ObservableList<Node> gridPaneChildren = gridPane.getChildren();
-        for(int y=0; y<fields.length; y++) {
-            for(int x=0; x<fields[y].length; x++) {
-                syncFieldAndChild(fields[y][x], (Button) gridPaneChildren.get(y*fields[y].length+x));
-            }
-        }
+        IntStream.range(0, gridPaneChildren.size()).forEach(i ->
+            syncFieldAndChild(board.getField(i), (Button) gridPaneChildren.get(i))
+        );
         remainingLabel.setText(String.valueOf(board.getRemainingMines()));
-
-        if(expAchievementsEnabled && !board.getNewAchievements().isEmpty()) {
-            Iterator<Achievement> newAchieveIter = board.getNewAchievements().iterator();
-            while(newAchieveIter.hasNext()) {
-                Achievement curr = newAchieveIter.next();
-                addAchievement(curr);
-                newAchieveIter.remove();
-            }
-        }
     }
 
     private void syncFieldAndChild(Field f, Button c) {
@@ -477,19 +441,6 @@ public class Controller {
         } catch(NullPointerException ignored) {
 
         }
-    }
-
-    private static boolean expAchievementsEnabled = false;
-    @FXML
-    private void updateExpAchieveToggle() {
-        expAchievementsEnabled = expAchieveToggle.isSelected();
-        if(expAchievementsEnabled && Achievement.EXP_ACHIEVE.isObtained() == false) {
-            addAchievement(Achievement.EXP_ACHIEVE.setObtainedAndGet());
-        }
-    }
-
-    static boolean isExpAchievementsEnabled() {
-        return expAchievementsEnabled;
     }
 
     private static boolean expNonogramModeEnabled = false;

@@ -3,74 +3,93 @@ package net.teatwig.mineswraft;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.layout.GridPane;
-import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.IntStream;
 
 /**
  * Created by timo on 15.04.2016.
  */
 class NonogramNumbers {
-    private List<List<Integer>> xNumbers, yNumbers;
+    private List<List<Integer>> colNumbers, rowNumbers;
 
     NonogramNumbers(Board board) {
-        xNumbers = new ArrayList<>();
-        yNumbers = new ArrayList<>();
+        colNumbers = new ArrayList<>();
+        rowNumbers = new ArrayList<>();
 
-        setNumbersInFrom(xNumbers, flipDiagonally(board.getFields()));
-        setNumbersInFrom(yNumbers, board.getFields());
+        setColumnNumbers(board);
+        setRowNumbers(board);
     }
 
-    private void setNumbersInFrom(List<List<Integer>> lists, Field[][] fields) {
-        for(Field[] fArr : fields) {
-            lists.add(new ArrayList<>());
+    private void setColumnNumbers(Board board) {
+        IntStream.range(0, board.getWidth()).forEach(no -> {
+            colNumbers.add(new ArrayList<>());
             int currentNumber = 0;
-            for(Field f : fArr) {
+            for(Field f : board.getColumn(no)) {
                 if(f.isMine()) {
                     currentNumber++;
                 } else if(!f.isMine()) {
                     if(currentNumber>0)
-                        getLast(lists).add(currentNumber);
+                        getLast(colNumbers).add(currentNumber);
                     currentNumber = 0;
                 }
             }
             if(currentNumber>0) {
-                getLast(lists).add(currentNumber);
+                getLast(colNumbers).add(currentNumber);
             }
-        }
+        });
     }
 
-    GridPane getXNumberAsGridPane() {
+    private void setRowNumbers(Board board) {
+        IntStream.range(0, board.getWidth()).forEach(no -> {
+            rowNumbers.add(new ArrayList<>());
+            int currentNumber = 0;
+            for(Field f : board.getRow(no)) {
+                if(f.isMine()) {
+                    currentNumber++;
+                } else if(!f.isMine()) {
+                    if(currentNumber>0)
+                        getLast(rowNumbers).add(currentNumber);
+                    currentNumber = 0;
+                }
+            }
+            if(currentNumber>0) {
+                getLast(rowNumbers).add(currentNumber);
+            }
+        });
+    }
+
+    GridPane getColNumberAsGridPane() {
         GridPane gridPane = new GridPane();
-        for(int i=0; i<xNumbers.size(); i++) {
-            if(xNumbers.get(i).isEmpty()) {
+        for(int i = 0; i< colNumbers.size(); i++) {
+            if(colNumbers.get(i).isEmpty()) {
                 Button b = new Button();
                 b.setVisible(false);
                 gridPane.add(b, i, 0);
             }
-            for(int j=0; j<xNumbers.get(i).size(); j++) {
-                int deltaSize = getXNumMaxSize() - xNumbers.get(i).size();
-                gridPane.add(new Button(xNumbers.get(i).get(j).toString()), i, j+deltaSize);
+            for(int j = 0; j< colNumbers.get(i).size(); j++) {
+                int deltaSize = getXNumMaxSize() - colNumbers.get(i).size();
+                gridPane.add(new Button(colNumbers.get(i).get(j).toString()), i, j+deltaSize);
             }
         }
         applyButtonStyles(gridPane, true);
         return gridPane;
     }
 
-    GridPane getYNumberAsGridPane() {
+    GridPane getRowNumberAsGridPane() {
         GridPane gridPane = new GridPane();
-        for(int i=0; i<yNumbers.size(); i++) {
-            if(yNumbers.get(i).isEmpty()) {
+        for(int i = 0; i< rowNumbers.size(); i++) {
+            if(rowNumbers.get(i).isEmpty()) {
                 Button b = new Button();
                 b.setVisible(false);
                 gridPane.add(b, 0, i);
             }
-            for(int j=0; j<yNumbers.get(i).size(); j++) {
-                int deltaSize = getYNumMaxSize() - yNumbers.get(i).size();
-                gridPane.add(new Button(yNumbers.get(i).get(j).toString()), j+deltaSize, i);
+            for(int j = 0; j< rowNumbers.get(i).size(); j++) {
+                int deltaSize = getYNumMaxSize() - rowNumbers.get(i).size();
+                gridPane.add(new Button(rowNumbers.get(i).get(j).toString()), j+deltaSize, i);
             }
         }
         applyButtonStyles(gridPane, false);
@@ -91,11 +110,11 @@ class NonogramNumbers {
     }
 
     private int getXNumMaxSize() {
-        return getSize(xNumbers);
+        return getSize(colNumbers);
     }
 
     private int getYNumMaxSize() {
-        return getSize(yNumbers);
+        return getSize(rowNumbers);
     }
 
     private <T> int getSize(List<List<T>> lists) {

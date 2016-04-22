@@ -5,20 +5,16 @@ import lombok.Getter;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
-import static net.teatwig.mineswraft.Achievement.*;
 
 /**
  * Created by timo on 03.03.2016.
  */
 class Board {
     private Field[][] board;
+    @Getter(AccessLevel.PACKAGE)
     private int width, height, mines;
     @Getter(AccessLevel.PACKAGE)
     private boolean firstMoveDone = false;
@@ -28,127 +24,104 @@ class Board {
     private int remainingMines;
     private LocalDateTime startTime;
     private int difficultyType = -1;
-    @Getter(AccessLevel.PACKAGE)
-    private Set<Achievement> newAchievements = new HashSet<>();
-    private boolean noFieldMarked = true; // Achievement
 
     Board(int width, int height, int mines, int difficultyType) {
         this(width, height, mines);
         this.difficultyType = difficultyType;
     }
 
-    Board(int width, int height, int mines) {
+    Board(int width, int height, int mines) { // currently only used in MainTerm because it doesnt specify a difficulty
         this.width = width; this.height = height; this.mines = mines;
         board = new Field[height][width];
         remainingMines = mines;
     }
 
-    private void init(int x_start, int y_start) {
-        init(x_start, y_start, false);
+    private void init(Coordinate startCoordinate) {
+        init(startCoordinate, false);
     }
 
     public void initNonogramMode() {
         firstMoveDone = true;
-        init(-3, -3, true); // could be 0 but value isn't used anyway
+        init(null, true); // could be 0 but value isn't used anyway
     }
 
-    private void init(int x_start, int y_start, boolean nonogramModeEnabled) {
+    private void init(Coordinate startCoordinate, boolean nonogramModeEnabled) {
         List<Integer> minePositions = IntStream.range(0, width*height).boxed().collect(Collectors.toList());
         Collections.shuffle(minePositions);
         // init mines
         minePositions.stream()
-                .map(p -> new int[]{p%width, p/width})
-                .filter(arr -> nonogramModeEnabled || notAdjacentToOrStart(x_start, y_start, arr[0], arr[1]))
+                .map(p -> Coordinate.of(p%width, p/width))
+                .filter(otherCoordinate -> nonogramModeEnabled || startCoordinate.isNotSurroundedBy(otherCoordinate))
                 .limit(mines)
-                .forEach(arr -> board[arr[1]][arr[0]] = new Field());
+                .forEach(coordinate -> setField(coordinate, new Field()));
         // init remaining
-        for (int y_cord=0; y_cord<height; y_cord++) {
-            for (int x_cord=0; x_cord<width; x_cord++) {
-                if(board[y_cord][x_cord] == null) { // isn't already init as mine
-                    board[y_cord][x_cord] = new Field(calcSurroundingMines(x_cord, y_cord));
-                }
-            }
-        }
+        minePositions.stream()
+                .map(p -> Coordinate.of(p%width, p/width))
+                .filter(coordinate -> getField(coordinate) == null)
+                .forEach(coordinate -> setField(coordinate, new Field(calcSurroundingMines(coordinate))));
+
         firstMoveDone = true;
         startTime = LocalDateTime.now();
     }
 
-
-    private boolean notAdjacentToOrStart(int x_start, int y_start, int x_cord, int y_cord) {
-        return x_cord < x_start - 1 || x_cord > x_start + 1 || y_cord < y_start - 1 || y_cord > y_start + 1;
+    private int calcSurroundingMines(Coordinate coordinate) {
+        return coordinate.getStreamOfSurrounding().mapToInt(this::fieldIsMineToInt).sum();
     }
 
-    private int calcSurroundingMines(int x_cord, int y_cord) {
-        int surroundingMines = 0;
-        surroundingMines += fieldIsMineToInt(x_cord-1, y_cord-1);
-        surroundingMines += fieldIsMineToInt(x_cord,   y_cord-1);
-        surroundingMines += fieldIsMineToInt(x_cord+1, y_cord-1);
-        surroundingMines += fieldIsMineToInt(x_cord-1, y_cord);
-        surroundingMines += fieldIsMineToInt(x_cord+1, y_cord);
-        surroundingMines += fieldIsMineToInt(x_cord-1, y_cord+1);
-        surroundingMines += fieldIsMineToInt(x_cord,   y_cord+1);
-        surroundingMines += fieldIsMineToInt(x_cord+1, y_cord+1);
-        return surroundingMines;
-    }
-
-    private int fieldIsMineToInt(int x_cord, int y_cord) {
+    private int fieldIsMineToInt(Coordinate coordinate) {
         Field f;
         try {
-            f = board[y_cord][x_cord];
+            f = getField(coordinate);
         } catch (ArrayIndexOutOfBoundsException ex) {
             return 0;
         }
         return f==null ? 0 : (f.isMine() ? 1 : 0);
     }
 
-    void click(int x_cord, int y_cord) {
-        click(x_cord, y_cord, false, false);
+    void click(Coordinate coordinate) {
+        click(coordinate, false, false);
     }
 
-    void toggleMarking(int x_cord, int y_cord) { click(x_cord, y_cord, true, false); }
+    void toggleMarking(Coordinate coordinate) { click(coordinate, true, false); }
 
-    void chord(int x_cord, int y_cord) {
-        click(x_cord, y_cord, false, true);
+    void chord(Coordinate coordinate) {
+        click(coordinate, false, true);
     }
 
-    private void click(int x_cord, int y_cord, boolean mark, boolean chord) {
+    private void click(Coordinate coordinate, boolean mark, boolean chord) {
         if(!firstMoveDone) {
-            init(x_cord, y_cord);
+            init(coordinate);
         }
         if(mark) {
             try {
-                board[y_cord][x_cord].toggleMarking();
-                if(board[y_cord][x_cord].isMarked())
+                getField(coordinate).toggleMarking();
+                if(getField(coordinate).isMarked())
                     remainingMines -= 1;
                 else
                     remainingMines += 1;
-
-                noFieldMarked = false;
             } catch (ArrayIndexOutOfBoundsException ex) {
                 ex.printStackTrace();
                 // didn't handle possible errors down there either
             }
-        } else if(chord && allPotentialSurroundingMarked(x_cord, y_cord)) {
-            openSurroundingMines(x_cord, y_cord, true);
+        } else if(chord && allPotentialSurroundingMarked(coordinate)) {
+            openSurroundingMines(coordinate, true);
         } else {
-            openSpace(x_cord, y_cord);
+            openSpace(coordinate);
         }
 
         if(onlyMinesLeft()) {
             remainingMines = 0;
             gameWon = true;
-
-            handleAchievements();
         }
     }
 
-    private void openSpace(int x_cord, int y_cord) {
-        openSpace(x_cord, y_cord, false, false);
+    private void openSpace(Coordinate coordinate) {
+        openSpace(coordinate, false, false);
     }
 
-    private void openSpace(int x_cord, int y_cord, boolean auto, boolean chord) {
+    private void openSpace(Coordinate coordinate, boolean auto, boolean chord) {
         try {
-            Field f = board[y_cord][x_cord];
+            Field f = getField(coordinate);
             if(f.isOpen()) {
                 return;
             } else if(!f.isMarked()) {
@@ -162,7 +135,7 @@ class Board {
                 }
 
                 if (f.getSurroundingMines() == 0) {
-                    openSurroundingMines(x_cord, y_cord);
+                    openSurroundingMines(coordinate);
                 }
             }
         } catch (ArrayIndexOutOfBoundsException ex) {
@@ -170,39 +143,22 @@ class Board {
         }
     }
 
-    private void openSurroundingMines(int x_cord, int y_cord) {
-        openSurroundingMines(x_cord, y_cord, false);
+    private void openSurroundingMines(Coordinate coordinate) {
+        openSurroundingMines(coordinate, false);
     }
 
-    private void openSurroundingMines(int x_cord, int y_cord, boolean chord) {
-        openSpace(x_cord-1, y_cord-1, false, chord);
-        openSpace(x_cord,   y_cord-1, false, chord);
-        openSpace(x_cord+1, y_cord-1, false, chord);
-        openSpace(x_cord-1, y_cord,   false, chord);
-        openSpace(x_cord+1, y_cord,   false, chord);
-        openSpace(x_cord-1, y_cord+1, false, chord);
-        openSpace(x_cord,   y_cord+1, false, chord);
-        openSpace(x_cord+1, y_cord+1, false, chord);
+    private void openSurroundingMines(Coordinate coordinate, boolean chord) {
+        coordinate.getStreamOfSurrounding().forEach(surrCoordinate -> openSpace(surrCoordinate, false, chord));
     }
 
-    private boolean allPotentialSurroundingMarked(int x_cord, int y_cord) {
-        int surroundingMarked = 0;
-
-        surroundingMarked += isMarkedTo1(x_cord-1, y_cord-1);
-        surroundingMarked += isMarkedTo1(x_cord,   y_cord-1);
-        surroundingMarked += isMarkedTo1(x_cord+1, y_cord-1);
-        surroundingMarked += isMarkedTo1(x_cord-1, y_cord);
-        surroundingMarked += isMarkedTo1(x_cord+1, y_cord);
-        surroundingMarked += isMarkedTo1(x_cord-1, y_cord+1);
-        surroundingMarked += isMarkedTo1(x_cord,   y_cord+1);
-        surroundingMarked += isMarkedTo1(x_cord+1, y_cord+1);
-
-        return surroundingMarked == board[y_cord][x_cord].getSurroundingMines();
+    private boolean allPotentialSurroundingMarked(Coordinate coordinate) {
+        int surroundingMarked = coordinate.getStreamOfSurrounding().mapToInt(this::isMarkedTo1).sum();
+        return surroundingMarked == getField(coordinate).getSurroundingMines();
     }
 
-    private int isMarkedTo1(int x_cord, int y_cord) {
+    private int isMarkedTo1(Coordinate coordinate) {
         try {
-            if(board[y_cord][x_cord].isMarked())
+            if(getField(coordinate).isMarked())
                 return 1;
         } catch (ArrayIndexOutOfBoundsException ex) {
             // another on of those
@@ -211,49 +167,7 @@ class Board {
     }
 
     private boolean onlyMinesLeft() {
-        for(Field[] f_arr : board) {
-            for(Field f : f_arr) {
-                if(!f.isOpen() && !f.isMine()) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
-    private void handleAchievements() {
-        handleAchievementsWin();
-        handleAchievementsNoMark();
-    }
-
-    private void handleAchievementsWin() {
-        switch (difficultyType) {
-            case Difficulty.EASY:
-                EASY_WIN.addToIfNotObtained(newAchievements);
-                break;
-            case Difficulty.MEDIUM:
-                MEDIUM_WIN.addToIfNotObtained(newAchievements);
-                break;
-            case Difficulty.HARD:
-                HARD_WIN.addToIfNotObtained(newAchievements);
-                break;
-        }
-    }
-
-    private void handleAchievementsNoMark() {
-        if(noFieldMarked) {
-            switch (difficultyType) {
-                case Difficulty.EASY:
-                    EASY_NOMARK.addToIfNotObtained(newAchievements);
-                    break;
-                case Difficulty.MEDIUM:
-                    MEDIUM_NOMARK.addToIfNotObtained(newAchievements);
-                    break;
-                case Difficulty.HARD:
-                    HARD_NOMARK.addToIfNotObtained(newAchievements);
-                    break;
-            }
-        }
+        return Arrays.stream(board).flatMap(Arrays::stream).allMatch(f -> f.isOpen() || f.isMine());
     }
 
     boolean isGameInProgress() {
@@ -268,12 +182,24 @@ class Board {
         }
     }
 
-    Field[][] getFields() {
-        return board;
+    Field getField(int positionInFlatArray) {
+        return board[positionInFlatArray/width][positionInFlatArray%width];
     }
 
-    Field getField(int x_cord, int y_cord) {
-        return board[y_cord][x_cord];
+    Field getField(Coordinate coordinate) {
+        return board[coordinate.getY()][coordinate.getX()];
+    }
+
+    private void setField(Coordinate coordinate, Field field) {
+        board[coordinate.getY()][coordinate.getX()] = field;
+    }
+
+    Field[] getRow(int n) {
+        return board[n];
+    }
+
+    Field[] getColumn(int x) {
+        return IntStream.range(0, height).mapToObj(y -> board[y][x]).toArray(Field[]::new);
     }
 
     public String xRayBoardToString() {

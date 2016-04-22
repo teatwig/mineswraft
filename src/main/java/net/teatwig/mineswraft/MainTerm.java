@@ -26,12 +26,11 @@ public class MainTerm {
             }
 
             try {
-                int x_cord = Integer.parseInt(line[intStart]) - 1;
-                int y_cord = Integer.parseInt(line[intStart+1]) - 1;
+                Coordinate coordinate = Coordinate.of(Integer.parseInt(line[intStart]) - 1, Integer.parseInt(line[intStart+1]) - 1);
                 if(mark)
-                    board.toggleMarking(x_cord, y_cord);
+                    board.toggleMarking(coordinate);
                 else
-                    board.click(x_cord, y_cord);
+                    board.click(coordinate);
             } catch (NumberFormatException | ArrayIndexOutOfBoundsException ex) {
                 System.out.println("Invalid input.");
             }
