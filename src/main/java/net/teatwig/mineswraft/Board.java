@@ -36,17 +36,15 @@ class Board {
     }
 
     private void init(Coordinate startCoordinate) {
-        List<Integer> minePositions = IntStream.range(0, width*height).boxed().collect(Collectors.toList());
+        List<Coordinate> minePositions = IntStream.range(0, width*height).mapToObj(p -> Coordinate.of(p%width, p/width)).collect(Collectors.toList());
         Collections.shuffle(minePositions);
         // init mines
         minePositions.stream()
-                .map(p -> Coordinate.of(p%width, p/width))
-                .filter(otherCoordinate -> startCoordinate.isNotSurroundedBy(otherCoordinate))
+                .filter(startCoordinate::isNotSurroundedBy)
                 .limit(mines)
                 .forEach(coordinate -> setField(coordinate, new Field()));
         // init remaining
         minePositions.stream()
-                .map(p -> Coordinate.of(p%width, p/width))
                 .filter(coordinate -> getField(coordinate) == null)
                 .forEach(coordinate -> setField(coordinate, new Field(calcSurroundingMines(coordinate))));
 
@@ -112,9 +110,7 @@ class Board {
     private void openSpace(Coordinate coordinate, boolean auto, boolean chord) {
         try {
             Field f = getField(coordinate);
-            if(f.isOpen()) {
-                return;
-            } else if(!f.isMarked()) {
+            if(!f.isOpen() && !f.isMarked()) {
                 if(!auto && f.isMine()) {
                     gameOver = true;
                     return;
