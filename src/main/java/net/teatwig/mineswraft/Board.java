@@ -42,7 +42,7 @@ class Board {
         minePositions.stream()
                 .filter(startCoordinate::isNotSurroundedBy)
                 .limit(mines)
-                .forEach(coordinate -> setField(coordinate, new Field()));
+                .forEach(coordinate -> setField(coordinate, new Field.Mine()));
         // init remaining
         minePositions.stream()
                 .filter(coordinate -> getField(coordinate) == null)
