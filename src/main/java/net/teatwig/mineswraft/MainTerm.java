@@ -23,7 +23,7 @@ public class MainTerm {
         } while (true);
     }
 
-    static void newGame(Scanner sc) {
+    private static void newGame(Scanner sc) {
         System.out.println("New game started.");
         Board board = new Board(10, 10, 10); // max mines = (x-1)(y-1)
         while (true) {
