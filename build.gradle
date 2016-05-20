@@ -58,6 +58,9 @@ def branch = {
 
 def fileName = "$rootProject.name-"+branch()+getVersionName()
 
+jar.exclude('images/icon.svg')
+jar.exclude('images/icon64.ico')
+
 jfx {
     println "Filename is $fileName"
     verbose = true
