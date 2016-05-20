@@ -40,9 +40,26 @@ def getVersionName = {
     }
 }
 
-def fileName = rootProject.name+"-"+getVersionName()
+def branch = {
+    def stdout = new ByteArrayOutputStream()
+    exec {
+        commandLine 'git', 'symbolic-ref', '--short', '-q', 'HEAD'
+        standardOutput = stdout
+        ignoreExitValue = true
+    }
+    String branch = stdout.toString().trim()
+    println "Branch is "+branch
+    if(branch.equals("master")) {
+        return ""
+    } else {
+        return branch+"-"
+    }
+}
+
+def fileName = "$rootProject.name-"+branch()+getVersionName()
 
 jfx {
+    println "Filename is $fileName"
     verbose = true
     mainClass 'net.teatwig.mineswraft.MainFX'
     jfxMainAppJarName = "${fileName}.jar"
