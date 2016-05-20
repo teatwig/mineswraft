@@ -158,16 +158,6 @@ public class Controller {
         }
     }
 
-    @FXML
-    private void openStatisticsDialog() {
-        Statistics.showStatisticsDialog();
-    }
-
-    private void writeLosingStatistic() {
-        Statistics.addGameResult(false, currentDifficulty, Duration.ZERO);
-    }
-
-    @FXML
     public void quit(Event event) {
         if(event != null) {
             event.consume();
@@ -267,11 +257,11 @@ public class Controller {
 
     private void syncGridAndBoard() {
         if(board.isGameOver()) {
-            Statistics.addGameResult(false, currentDifficulty, Duration.ZERO);
+            writeLosingStatistic();
             removeMouseHandlersFromGridPane();
             infoLabel.setText("GAME OVER");
         } else if(board.isGameWon()) {
-            Statistics.addGameResult(true, currentDifficulty, board.getTimePassed());
+            writeWinningStatistic();
             removeMouseHandlersFromGridPane();
             if(expNonogramModeEnabled) {
                 infoLabel.setText("You're a nono-winner!");
@@ -315,8 +305,19 @@ public class Controller {
         }
     }
 
-    @FXML
-    private void customDifficultyHandler() {
+    public void openStatisticsDialog() {
+        Statistics.showStatisticsDialog();
+    }
+
+    private void writeLosingStatistic() {
+        Statistics.addGameResult(false, currentDifficulty, Duration.ZERO);
+    }
+
+    private void writeWinningStatistic() {
+        Statistics.addGameResult(true, currentDifficulty, board.getTimePassed());
+    }
+
+    public void customDifficultyHandler() {
         Optional<int[]> customData = customDialog().showAndWait();
         if(customData.isPresent()) {
             int[] customArr = customData.get();
