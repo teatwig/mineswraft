@@ -79,7 +79,7 @@ def versionedProjectName = "$rootProject.name-" + getVersionName()
 
 distributions {
     main {
-        distributionBaseName = "$versionedProjectName"
+        distributionBaseName = "$versionedProjectName-java"
     }
 }
 
@@ -89,5 +89,5 @@ jlink {
     launcher {
         name = "$rootProject.name"
     }
-    imageName = "$versionedProjectName"
+    imageName = "$versionedProjectName-rt"
 }
