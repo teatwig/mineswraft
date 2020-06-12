@@ -82,6 +82,10 @@ distributions {
         distributionBaseName = "$versionedProjectName-java"
     }
 }
+tasks.withType(Tar) {
+    compression = Compression.GZIP
+    archiveExtension = "tar.gz"
+}
 
 // build:jlink/jlinkZip creates a zip containing everything and a JRE, so it should be able to run on systems that don't have java installed
 jlink {
