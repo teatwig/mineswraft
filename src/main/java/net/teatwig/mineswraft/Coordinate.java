@@ -13,6 +13,7 @@ import java.util.stream.Stream;
 @ToString
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 class Coordinate {
+
     @Getter(AccessLevel.PACKAGE)
     final int x, y;
 
@@ -22,9 +23,10 @@ class Coordinate {
 
     Stream<Coordinate> getStreamOfSurrounding() {
         return Stream.of(
-                Coordinate.of(x-1, y-1), Coordinate.of(x, y-1), Coordinate.of(x+1, y-1),
-                Coordinate.of(x-1, y), Coordinate.of(x+1, y),
-                Coordinate.of(x-1, y+1), Coordinate.of(x, y+1), Coordinate.of(x+1, y+1));
+                Coordinate.of(x - 1, y - 1), Coordinate.of(x, y - 1), Coordinate.of(x + 1, y - 1),
+                Coordinate.of(x - 1, y), Coordinate.of(x + 1, y),
+                Coordinate.of(x - 1, y + 1), Coordinate.of(x, y + 1), Coordinate.of(x + 1, y + 1)
+        );
     }
 
     boolean isNotSurroundedBy(Coordinate other) {
@@ -40,4 +42,5 @@ class Coordinate {
             return false;
         }
     }
+
 }

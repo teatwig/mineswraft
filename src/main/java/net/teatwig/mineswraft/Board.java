@@ -5,7 +5,9 @@ import lombok.Getter;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -13,15 +15,21 @@ import java.util.stream.IntStream;
  * Created by timo on 03.03.2016.
  */
 class Board {
+
     private Field[][] board;
+
     @Getter(AccessLevel.PACKAGE)
     private int width, height, mines;
+
     @Getter(AccessLevel.PACKAGE)
     private boolean firstMoveDone = false;
+
     @Getter(AccessLevel.PACKAGE)
     private boolean gameOver = false, gameWon = false;
+
     @Getter(AccessLevel.PACKAGE)
     private int remainingMines;
+
     private LocalDateTime startTime;
     private int difficultyType = -1;
 
@@ -31,7 +39,9 @@ class Board {
     }
 
     Board(int width, int height, int mines) { // currently only used in MainTerm because it doesnt specify a difficulty
-        this.width = width; this.height = height; this.mines = mines;
+        this.width = width;
+        this.height = height;
+        this.mines = mines;
         board = new Field[height][width];
         remainingMines = mines;
     }
@@ -46,13 +56,18 @@ class Board {
     }
 
     private void init(Coordinate startCoordinate, boolean nonogramModeEnabled) {
-        List<Coordinate> minePositions = IntStream.range(0, width*height).mapToObj(p -> Coordinate.of(p%width, p/width)).collect(Collectors.toList());
+        List<Coordinate> minePositions = IntStream.range(0, width * height)
+                .mapToObj(p -> Coordinate.of(p % width, p / width))
+                .collect(Collectors.toList());
+
         Collections.shuffle(minePositions);
+
         // init mines
         minePositions.stream()
                 .filter(mineCoordinate -> nonogramModeEnabled || startCoordinate.isNotSurroundedBy(mineCoordinate))
                 .limit(mines)
                 .forEach(coordinate -> setField(coordinate, new Field.Mine()));
+
         // init remaining
         minePositions.stream()
                 .filter(coordinate -> getField(coordinate) == null)
@@ -73,41 +88,44 @@ class Board {
         } catch (ArrayIndexOutOfBoundsException ex) {
             return 0;
         }
-        return f==null ? 0 : (f.isMine() ? 1 : 0);
+        return f == null ? 0 : (f.isMine() ? 1 : 0);
     }
 
     void click(Coordinate coordinate) {
         click(coordinate, false, false);
     }
 
-    void toggleMarking(Coordinate coordinate) { click(coordinate, true, false); }
+    void toggleMarking(Coordinate coordinate) {
+        click(coordinate, true, false);
+    }
 
     void chord(Coordinate coordinate) {
         click(coordinate, false, true);
     }
 
     private void click(Coordinate coordinate, boolean mark, boolean chord) {
-        if(!firstMoveDone) {
+        if (!firstMoveDone) {
             init(coordinate);
         }
-        if(mark) {
+        if (mark) {
             try {
                 getField(coordinate).toggleMarking();
-                if(getField(coordinate).isMarked())
+                if (getField(coordinate).isMarked()) {
                     remainingMines -= 1;
-                else
+                } else {
                     remainingMines += 1;
+                }
             } catch (ArrayIndexOutOfBoundsException ex) {
                 ex.printStackTrace();
                 // didn't handle possible errors down there either
             }
-        } else if(chord && allPotentialSurroundingMarked(coordinate)) {
+        } else if (chord && allPotentialSurroundingMarked(coordinate)) {
             openSurroundingMines(coordinate, true);
         } else {
             openSpace(coordinate);
         }
 
-        if(onlyMinesLeft()) {
+        if (onlyMinesLeft()) {
             remainingMines = 0;
             gameWon = true;
         }
@@ -120,13 +138,13 @@ class Board {
     private void openSpace(Coordinate coordinate, boolean auto, boolean chord) {
         try {
             Field f = getField(coordinate);
-            if(!f.isOpen() && !f.isMarked()) {
-                if(!auto && f.isMine()) {
+            if (!f.isOpen() && !f.isMarked()) {
+                if (!auto && f.isMine()) {
                     gameOver = true;
                     return;
                 }
 
-                if(!f.isMine() || chord) {
+                if (!f.isMine() || chord) {
                     f.open();
                 }
 
@@ -154,8 +172,9 @@ class Board {
 
     private int isMarkedTo1(Coordinate coordinate) {
         try {
-            if(getField(coordinate).isMarked())
+            if (getField(coordinate).isMarked()) {
                 return 1;
+            }
         } catch (ArrayIndexOutOfBoundsException ex) {
             // another on of those
         }
@@ -171,7 +190,7 @@ class Board {
     }
 
     Duration getTimePassed() {
-        if(startTime == null) {
+        if (startTime == null) {
             return Duration.ZERO;
         } else {
             return Duration.between(startTime, LocalDateTime.now());
@@ -179,7 +198,7 @@ class Board {
     }
 
     Field getField(int positionInFlatArray) {
-        return board[positionInFlatArray/width][positionInFlatArray%width];
+        return board[positionInFlatArray / width][positionInFlatArray % width];
     }
 
     Field getField(Coordinate coordinate) {
@@ -206,7 +225,7 @@ class Board {
         for (Field[] f_a : board) {
             boardString.append("| ");
             for (Field f : f_a) {
-                boardString.append(f.isMine()?"X ":f.getSurroundingMines()+" ");
+                boardString.append(f.isMine() ? "X " : f.getSurroundingMines() + " ");
             }
             boardString.append("|\n");
         }
@@ -225,7 +244,7 @@ class Board {
         for (Field[] f_a : board) {
             boardString.append("| ");
             for (Field f : f_a) {
-                boardString.append(f==null?"# ":f+" ");
+                boardString.append(f == null ? "# " : f + " ");
             }
             boardString.append("|\n");
         }
@@ -234,4 +253,5 @@ class Board {
         boardString.append("o");
         return boardString.toString();
     }
+
 }

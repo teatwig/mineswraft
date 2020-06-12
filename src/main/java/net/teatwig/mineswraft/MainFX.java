@@ -34,11 +34,12 @@ public class MainFX extends Application {
         Parent root = loader.load();
         Controller controller = loader.getController();
         primaryStage.setOnCloseRequest(controller::quit);
-        primaryStage.setTitle("Mineswraft "+appVersion);
+        primaryStage.setTitle("Mineswraft " + appVersion);
         primaryStage.getIcons().addAll(Controller.gameIcon());
         primaryStage.setScene(new Scene(root));
         primaryStage.setResizable(false);
         primaryStage.sizeToScene();
         primaryStage.show();
     }
+
 }

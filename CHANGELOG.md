@@ -4,8 +4,15 @@ This project adheres to [Semantic Versioning](http://semver.org/) (at least I tr
 
 ## Unreleased
 ### Added
-- launch4j task for building .exe
 ### Changed
+
+## [0.2.0] - 2020-06-12
+### Added
+- Experimental Nonogram Mode
+- JavaFX is now bundled with every release
+- Creating a standalone runtime image (RT) which includes a slimmed down JRE
+### Changed
+- Upgraded to Java 11, JavaFX 14, Gradle 5.6 
 - Now using Gradle *plugins DSL*
 
 ## [0.1.0] - 2016-04-21

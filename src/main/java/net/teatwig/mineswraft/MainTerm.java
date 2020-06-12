@@ -6,29 +6,36 @@ import java.util.Scanner;
  * Created by timo on 03.03.2016.
  */
 public class MainTerm {
+
     public static void main(String... args) {
         Scanner sc = new Scanner(System.in);
         do {
             newGame(sc);
             System.out.println("Write \"n\" to start a new game or \"q\" to quit.");
-            while(true) {
+            while (true) {
                 String input = sc.nextLine();
-                if(input.equals("n"))
+                if (input.equals("n")) {
                     break;
-                if(input.equals("q"))
+                }
+
+                if (input.equals("q")) {
                     System.exit(0);
-                else
+                } else {
                     System.out.println("Invalid input.");
+                }
             }
         } while (true);
     }
 
     private static void newGame(Scanner sc) {
         System.out.println("New game started.");
-        Board board = new Board(10, 10, 10); // max mines = (x-1)(y-1)
+
+        Board board = new Board(10, 10, 10); // max mines = (x-1)(y-1
+
         while (true) {
             System.out.println(board);
             System.out.println("Show me your moves: (optional)mark X-Coordinate Y-Coordinate");
+
             String[] line = sc.nextLine().split(" ");
             boolean mark = false;
             int intStart = 0;
@@ -44,10 +51,11 @@ public class MainTerm {
 
             try {
                 Coordinate coordinate = Coordinate.of(Integer.parseInt(line[intStart]) - 1, Integer.parseInt(line[intStart + 1]) - 1);
-                if (mark)
+                if (mark) {
                     board.toggleMarking(coordinate);
-                else
+                } else {
                     board.click(coordinate);
+                }
             } catch (NumberFormatException | ArrayIndexOutOfBoundsException ex) {
                 System.out.println("Invalid input.");
             }
@@ -62,4 +70,5 @@ public class MainTerm {
             }
         }
     }
+
 }

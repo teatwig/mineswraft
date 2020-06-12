@@ -9,12 +9,16 @@ import lombok.RequiredArgsConstructor;
  */
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 class Field {
+
     @Getter(AccessLevel.PACKAGE)
     private boolean isOpen = false;
+
     @Getter(AccessLevel.PACKAGE)
     private boolean isMarked = false;
+
     @Getter(AccessLevel.PACKAGE)
     private final boolean isMine;
+
     @Getter(AccessLevel.PACKAGE)
     private final int surroundingMines;
 
@@ -32,19 +36,19 @@ class Field {
 
     @Override
     public String toString() {
-        if(isOpen()) {
-            return getSurroundingMines()>0 ? String.valueOf(getSurroundingMines()) : " ";
+        if (isOpen()) {
+            return getSurroundingMines() > 0 ? String.valueOf(getSurroundingMines()) : " ";
         } else {
-            if(isMarked())
-                return "Δ";
-            else
-                return "#";
+            return isMarked() ? "Δ" : "#";
         }
     }
 
     static class Mine extends Field {
+
         Mine() {
             super(true, -1);
         }
+
     }
+
 }
