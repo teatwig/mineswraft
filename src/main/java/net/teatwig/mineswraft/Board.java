@@ -14,6 +14,7 @@ import java.util.stream.IntStream;
  */
 class Board {
     private Field[][] board;
+    @Getter(AccessLevel.PACKAGE)
     private int width, height, mines;
     @Getter(AccessLevel.PACKAGE)
     private boolean firstMoveDone = false;
@@ -36,11 +37,20 @@ class Board {
     }
 
     private void init(Coordinate startCoordinate) {
+        init(startCoordinate, false);
+    }
+
+    public void initNonogramMode() {
+        firstMoveDone = true;
+        init(null, true); // could be 0 but value isn't used anyway
+    }
+
+    private void init(Coordinate startCoordinate, boolean nonogramModeEnabled) {
         List<Coordinate> minePositions = IntStream.range(0, width*height).mapToObj(p -> Coordinate.of(p%width, p/width)).collect(Collectors.toList());
         Collections.shuffle(minePositions);
         // init mines
         minePositions.stream()
-                .filter(startCoordinate::isNotSurroundedBy)
+                .filter(mineCoordinate -> nonogramModeEnabled || startCoordinate.isNotSurroundedBy(mineCoordinate))
                 .limit(mines)
                 .forEach(coordinate -> setField(coordinate, new Field.Mine()));
         // init remaining
@@ -178,6 +188,14 @@ class Board {
 
     private void setField(Coordinate coordinate, Field field) {
         board[coordinate.getY()][coordinate.getX()] = field;
+    }
+
+    Field[] getRow(int n) {
+        return board[n];
+    }
+
+    Field[] getColumn(int x) {
+        return IntStream.range(0, height).mapToObj(y -> board[y][x]).toArray(Field[]::new);
     }
 
     public String xRayBoardToString() {

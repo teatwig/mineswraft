@@ -40,6 +40,10 @@ public class Controller {
     @FXML
     private AnchorPane rootPane;
     @FXML
+    private VBox structureVBox;
+    @FXML
+    private GridPane nonoPane;
+    @FXML
     private GridPane gridPane;
     @FXML
     private Label infoLabel;
@@ -53,6 +57,8 @@ public class Controller {
     private RadioMenuItem customToggle;
     @FXML
     private CheckMenuItem colorToggle;
+    @FXML
+    private RadioMenuItem expNonogramModeToggle;
 
     private Board board;
     private Toggle currentDifficultyToggle;
@@ -60,7 +66,7 @@ public class Controller {
     private Difficulty currentDifficulty, lastDifficulty; // TODO remove lastDifficulty because it's not needed any longer
     private IntegerProperty gridWith = new SimpleIntegerProperty();
 
-    private static final int BUTTON_SIZE = 25;
+    static final int BUTTON_SIZE = 25;
     private static final String STYLE_CLOSED = "-fx-background-radius: 0";
     private static final String STYLE_OPEN = "-fx-border-color: #DDD; -fx-border-size: 1px; -fx-background-radius: 0; -fx-background-color: #EFEFEF";
     private static final String STYLE_MINE = "-fx-border-color: #DDD; -fx-border-size: 1px; -fx-background-radius: 0; -fx-background-color: #E1E1E1";
@@ -87,7 +93,8 @@ public class Controller {
     /**
      * Loads Statistic from file, sets Difficulty and starts a new game.
      */
-    public void initialize() {
+    @FXML
+    private void initialize() {
         Statistics.load();
 
         currentDifficultyToggle = difficultyToggles.getSelectedToggle();
@@ -104,7 +111,21 @@ public class Controller {
         remainingLabel.setText(String.valueOf(mines));
         infoLabel.setText("");
 
+        board = new Board(width, height, mines, currentDifficulty.getType());
+
+        nonoPane.getChildren().clear();
         gridPane.getChildren().clear();
+
+        if(expNonogramModeEnabled) {
+            board.initNonogramMode();
+            NonogramNumbers numbers = new NonogramNumbers(board);
+            nonoPane.add(new Pane(), 0, 0);
+            nonoPane.add(numbers.getColNumberAsGridPane(), 1, 0);
+            nonoPane.add(numbers.getRowNumberAsGridPane(), 0, 1);
+        }
+
+        nonoPane.add(gridPane, 1, 1);
+        gridPane.setAlignment(Pos.CENTER);
         IntStream.range(0, height).forEach(y -> IntStream.range(0, width).forEach(x -> {
             Button btn = new Button();
             btn.setPrefSize(BUTTON_SIZE, BUTTON_SIZE);
@@ -122,16 +143,15 @@ public class Controller {
                 secPressed =  e.isSecondaryButtonDown();
             });
             gridPane.add(btn, x, y);
-            gridPane.setAlignment(Pos.CENTER);
         }));
 
-        board = new Board(width, height, mines, currentDifficulty.getType());
         startTimerUpdateThread();
 
         autoResizeStage();
     }
 
-    public void newGameAlert() {
+    @FXML
+    private void newGameAlert() {
         if(!board.isGameInProgress() || confirmDialogOK(NEW_GAME)) {
             // using short-circuit evaluation for success!
             newGame();
@@ -148,6 +168,7 @@ public class Controller {
         }
     }
 
+    @FXML
     public void difficultyChangeHandler() {
         Toggle newToggle = difficultyToggles.getSelectedToggle();
         // happens when Accelerator for currentDifficultyToggle is pressed
@@ -242,13 +263,16 @@ public class Controller {
         } else if(board.isGameWon()) {
             writeWinningStatistic();
             removeMouseHandlersFromGridPane();
-            infoLabel.setText("You're a winner!");
+            if(expNonogramModeEnabled) {
+                infoLabel.setText("You're a nono-winner!");
+            } else {
+                infoLabel.setText("You're a winner!");
+            }
         }
         ObservableList<Node> gridPaneChildren = gridPane.getChildren();
         IntStream.range(0, gridPaneChildren.size()).forEach(i ->
             syncFieldAndChild(board.getField(i), (Button) gridPaneChildren.get(i))
         );
-
         remainingLabel.setText(String.valueOf(board.getRemainingMines()));
     }
 
@@ -319,11 +343,15 @@ public class Controller {
     }
 
     private Alert confirmAlert(String title, String header) {
+        return confirmAlert(title, header, "");
+    }
+
+    private Alert confirmAlert(String title, String header, String content) {
         Alert alert = new Alert(Alert.AlertType.WARNING);
         alert.setTitle(title);
         setDialogIcon(alert);
         alert.setHeaderText(header);
-        alert.setContentText("The current game will be discarded and count as a lost game in the statistics.");
+        alert.setContentText("The current game will be discarded and count as a lost game in the statistics.\n"+content);
         alert.getButtonTypes().add(ButtonType.CANCEL);
         return alert;
     }
@@ -411,9 +439,24 @@ public class Controller {
     private void autoResizeStage() {
         try {
             getStage(rootPane).sizeToScene();
-        } catch(NullPointerException ex) {
+        } catch(NullPointerException ignored) {
 
         }
+    }
+
+    private static boolean expNonogramModeEnabled = false;
+    @FXML
+    private void updateExpNonogramModeToggle() {
+        expNonogramModeEnabled = expNonogramModeToggle.isSelected();
+        if(expNonogramModeEnabled) {
+            confirmAlert("New Game", "You've enabled Nonogram-Mode (experimental)!",
+                    "Statistics for this mode won't be saved.\nTry a Custom game for higher difficulty.").showAndWait();
+        }
+        newGame();
+    }
+
+    static boolean isExpNonogramModeEnabled() {
+        return expNonogramModeEnabled;
     }
 
     public static Image[] gameIcon() {

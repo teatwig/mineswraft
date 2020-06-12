@@ -30,6 +30,11 @@ class Statistics {
     // TODO best times or maybe name entry?
 
     static void addGameResult(boolean won, Difficulty difficulty, Duration newTime) {
+        if(Controller.isExpNonogramModeEnabled()) {
+            System.out.println("Stats for Nonogram-Mode won't be saved with the normal ones, you cheater!");
+            return;
+        }
+
         int difType = difficulty.getType();
         if(difType != Difficulty.CUSTOM) {
             playedGames[difType] += 1;
