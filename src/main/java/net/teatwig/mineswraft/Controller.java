@@ -419,9 +419,9 @@ public class Controller {
     public static Image[] gameIcon() {
         Class c = Controller.class;
         return new Image[] {
-            new Image(c.getClassLoader().getResourceAsStream("images/icon16.png")),
-            new Image(c.getClassLoader().getResourceAsStream("images/icon32.png")),
-            new Image(c.getClassLoader().getResourceAsStream("images/icon64.png"))
+            new Image(c.getResourceAsStream("images/icon16.png")),
+            new Image(c.getResourceAsStream("images/icon32.png")),
+            new Image(c.getResourceAsStream("images/icon64.png"))
         };
     }
 }
