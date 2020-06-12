@@ -5,6 +5,7 @@ This project adheres to [Semantic Versioning](http://semver.org/) (at least I tr
 ## Unreleased
 ### Added
 ### Changed
+- Move to Kotlin DSL for Gradle
 
 ## [0.2.0] - 2020-06-12
 ### Added
