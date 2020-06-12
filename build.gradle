@@ -1,5 +1,4 @@
 import java.time.OffsetDateTime
-import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 
@@ -13,14 +12,13 @@ plugins {
     id 'java'
     id 'idea'
     id 'com.gorylenko.gradle-git-properties' version '2.2.2'
-    
+    id 'io.freefair.lombok' version '5.1.0'
+
     // jfx
     id 'application'
     id 'org.openjfx.javafxplugin' version '0.0.8'
-    id 'org.beryx.jlink' version '2.12.0'
 
-    id 'io.freefair.lombok' version '5.1.0'
-    id 'edu.sc.seis.launch4j' version '2.4.6'
+    id 'org.beryx.jlink' version '2.19.0'
 }
 
 repositories {
@@ -30,49 +28,12 @@ dependencies {
     testImplementation group: 'junit', name: 'junit', version: '4.11'
 }
 
-// deprecated
-/*
- * Gets the version name from the latest Git tag
- */
-def getVersionName = {
-    def stdout = new ByteArrayOutputStream()
-    exec {
-        commandLine 'git', 'describe', '--tags'
-        standardOutput = stdout
-        ignoreExitValue = true
-    }
-    def version = stdout.toString().trim()
-    if(version.isEmpty()) {
-        "DEV"
-    } else {
-        version.replaceFirst("^v", "");
-    }
-}
-
-// deprecated
-def branch = {
-    def stdout = new ByteArrayOutputStream()
-    exec {
-        commandLine 'git', 'symbolic-ref', '--short', '-q', 'HEAD'
-        standardOutput = stdout
-        ignoreExitValue = true
-    }
-    String branch = stdout.toString().trim()
-    println "Branch is "+branch
-    if(branch.equals("master")) {
-        return ""
-    } else {
-        return branch+"-"
-    }
-}
-// deprecated
-def fileName = "$rootProject.name-"+branch()+getVersionName()
-
 jar.exclude('images/icon.svg')
 jar.exclude('images/icon64.ico')
 
 gitProperties {
-    keys = ['git.closest.tag.commit.count',
+    keys = ['git.branch',
+            'git.closest.tag.commit.count',
             'git.closest.tag.name',
             'git.commit.id',
             'git.commit.id.abbrev',
@@ -87,48 +48,46 @@ java {
 }
 
 javafx {
-//    println "Filename is $fileName"
-//    verbose = true
-//    jfxMainAppJarName = "${fileName}.jar"
-
     version = '14.0.1'
     modules = [ 'javafx.controls', 'javafx.fxml' ]
 }
 
+// build:build creates a zip with all required dependencies in "build/distributions"
 application {
-    mainClassName = "net.teatwig.mineswraft.MainFX"
+    mainModule = 'net.teatwig.mineswraft'
+    mainClass = 'net.teatwig.mineswraft.MainFX'
 }
 
-jar {
-    manifest {
-        attributes(
-                'Main-Class': application.mainClassName,
-                'Implementation-Version': getVersionName()
-        )
+/*
+ * Gets the version name from the latest Git tag
+ */
+def getVersionName = {
+    def stdout = new ByteArrayOutputStream()
+    exec {
+        commandLine 'git', 'describe', '--dirty'
+        standardOutput = stdout
+        ignoreExitValue = true
+    }
+    def version = stdout.toString().trim()
+    if(version.isEmpty()) {
+        "DEV"
+    } else {
+        version.replaceFirst("^v", "");
+    }
+}
+def versionedProjectName = "$rootProject.name-" + getVersionName()
+
+distributions {
+    main {
+        distributionBaseName = "$versionedProjectName"
     }
 }
 
+// build:jlink/jlinkZip creates a zip containing everything and a JRE, so it should be able to run on systems that don't have java installed
 jlink {
     options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
     launcher {
         name = "$rootProject.name"
     }
-}
-
-// deprecated
-launch4j {
-    jar = "$buildDir/jfx/app/${fileName}.jar"
-    outfile = "${fileName}.exe"
-    jreMinVersion = '11'
-    icon = "$rootDir/src/main/resources/images/icon64.ico"
-}
-
-// deprecated
-/*
- * Executes jfx before launch4j
- */
-tasks.whenTaskAdded { task ->
-    if(task.name.equals("createExeWithJar")) {
-        task.dependsOn(jlink)
-    }
+    imageName = "$versionedProjectName"
 }

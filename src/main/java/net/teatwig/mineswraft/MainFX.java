@@ -22,7 +22,13 @@ public class MainFX extends Application {
     public void start(Stage primaryStage) throws IOException {
         Properties gitProps = new Properties();
         gitProps.load(getClass().getResourceAsStream("/git.properties"));
+        // get app version and remove version prefix
         String appVersion = gitProps.getProperty("git.commit.id.describe");
+        if (appVersion != null) {
+            appVersion = appVersion.replaceFirst("^v", "");
+        } else {
+            appVersion = "DEV";
+        }
 
         FXMLLoader loader = new FXMLLoader(getClass().getResource("fxml/gui.fxml"));
         Parent root = loader.load();
