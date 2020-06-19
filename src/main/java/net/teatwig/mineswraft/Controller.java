@@ -19,6 +19,7 @@ import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioMenuItem;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.Image;
@@ -32,10 +33,12 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
+import javafx.util.converter.IntegerStringConverter;
 
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.function.UnaryOperator;
 import java.util.stream.IntStream;
 
 import static javafx.scene.input.MouseButton.MIDDLE;
@@ -344,7 +347,7 @@ public class Controller {
     }
 
     public void customDifficultyHandler() {
-        Optional<int[]> customData = customDialog().showAndWait();
+        Optional<int[]> customData = customDifficultyDialog().showAndWait();
         if (customData.isPresent()) {
             int[] customArr = customData.get();
             int width = customArr[0];
@@ -382,7 +385,7 @@ public class Controller {
         return alert;
     }
 
-    private Dialog<int[]> customDialog() {
+    private Dialog<int[]> customDifficultyDialog() {
         Dialog<int[]> customInput = new Dialog<>();
         customInput.setTitle("Custom");
         setDialogIcon(customInput);
@@ -391,13 +394,35 @@ public class Controller {
         grid.setHgap(5);
         grid.setVgap(5);
 
+        // TODO put somewhere else
+        IntegerStringConverter intStringConverter = new IntegerStringConverter();
+        UnaryOperator<TextFormatter.Change> integerFilter = change -> {
+            String newText = change.getControlNewText();
+            if (newText.matches("([1-9][0-9]*)?")) {
+                return change;
+            }
+            return null;
+        };
+
+        // TODO fill with last custom size
         TextField width = new TextField();
+        TextFormatter<Integer> widthTextFormatter = new TextFormatter<>(intStringConverter, 9, integerFilter);
+        width.setTextFormatter(widthTextFormatter);
+
         TextField height = new TextField();
+        TextFormatter<Integer> heightTextFormatter = new TextFormatter<>(intStringConverter, 9, integerFilter);
+        height.setTextFormatter(heightTextFormatter);
+
         TextField mines = new TextField();
+        TextFormatter<Integer> minesTextFormatter = new TextFormatter<>(intStringConverter, 10, integerFilter);
+        mines.setTextFormatter(minesTextFormatter);
+
         grid.add(new Label("Width (9-30):"), 0, 0);
         grid.add(width, 1, 0);
+
         grid.add(new Label("Height (9-24):"), 0, 1);
         grid.add(height, 1, 1);
+
         grid.add(new Label("Mines (up to 64-667):"), 0, 2);
         grid.add(mines, 1, 2);
 
@@ -405,10 +430,11 @@ public class Controller {
 
         customInput.setResultConverter(button -> {
             if (button == ButtonType.OK) {
+                // TODO use a dedicated object instead
                 return new int[]{
-                        Integer.parseInt(width.getText()),
-                        Integer.parseInt(height.getText()),
-                        Integer.parseInt(mines.getText())
+                        widthTextFormatter.getValue(),
+                        heightTextFormatter.getValue(),
+                        minesTextFormatter.getValue()
                 };
             }
             return null;

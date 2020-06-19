@@ -4,6 +4,7 @@ This project adheres to [Semantic Versioning](http://semver.org/) (at least I tr
 
 ## Unreleased
 ### Added
+- Reject invalid input in custom difficulty dialog
 ### Changed
 - Move to Kotlin DSL for Gradle
 
