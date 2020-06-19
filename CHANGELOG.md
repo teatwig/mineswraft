@@ -7,6 +7,8 @@ This project adheres to [Semantic Versioning](http://semver.org/) (at least I tr
 - Reject invalid input in custom difficulty dialog
 ### Changed
 - Move to Kotlin DSL for Gradle
+### Fixed
+- Nonogram Mode being entered even if Cancel is pressed
 
 ## [0.2.0] - 2020-06-12
 ### Added

@@ -505,11 +505,16 @@ public class Controller {
 
     @FXML
     private void updateExpNonogramModeToggle() {
-        expNonogramModeEnabled = expNonogramModeToggle.isSelected();
-        if (expNonogramModeEnabled) {
-            confirmAlert("New Game", "You've enabled Nonogram-Mode (experimental)!",
-                    "Statistics for this mode won't be saved.\nTry a Custom game for higher difficulty.").showAndWait();
+        if (expNonogramModeToggle.isSelected()) {
+            Alert expNonogramModeAlert = confirmAlert("New Game", "You're about to enable Nonogram-Mode (experimental)!",
+                    "Statistics for this mode won't be saved.\nTry a Custom game for higher difficulty!");
+            ButtonType pressedButton = expNonogramModeAlert.showAndWait().get();
+            if (ButtonType.OK != pressedButton) {
+                // unset if dialog cancelled
+                expNonogramModeToggle.setSelected(false);
+            }
         }
+        expNonogramModeEnabled = expNonogramModeToggle.isSelected();
         newGame();
     }
 
