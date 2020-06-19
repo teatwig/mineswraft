@@ -101,7 +101,7 @@ class NonogramNumbers {
         return buttons;
     }
 
-    private IntFunction<Button> emptyButton = i -> {
+    private final IntFunction<Button> emptyButton = i -> {
         Button b = new Button();
         b.setVisible(false);
         return b;

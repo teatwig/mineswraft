@@ -36,8 +36,8 @@ class Coordinate {
     @Override
     public boolean equals(Object other) {
         if (other instanceof Coordinate) {
-            Coordinate coordinate = (Coordinate) other;
-            return this.x == coordinate.x && this.y == coordinate.y;
+            Coordinate otherCoord = (Coordinate) other;
+            return this.x == otherCoord.x && this.y == otherCoord.y;
         } else {
             return false;
         }

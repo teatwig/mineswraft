@@ -132,14 +132,14 @@ class Board {
     }
 
     private void openSpace(Coordinate coordinate) {
-        openSpace(coordinate, false, false);
+        openSpace(coordinate, false);
     }
 
-    private void openSpace(Coordinate coordinate, boolean auto, boolean chord) {
+    private void openSpace(Coordinate coordinate, boolean chord) {
         try {
             Field f = getField(coordinate);
             if (!f.isOpen() && !f.isMarked()) {
-                if (!auto && f.isMine()) {
+                if (f.isMine()) {
                     gameOver = true;
                     return;
                 }
@@ -162,7 +162,7 @@ class Board {
     }
 
     private void openSurroundingMines(Coordinate coordinate, boolean chord) {
-        coordinate.getStreamOfSurrounding().forEach(surrCoordinate -> openSpace(surrCoordinate, false, chord));
+        coordinate.getStreamOfSurrounding().forEach(surrCoordinate -> openSpace(surrCoordinate, chord));
     }
 
     private boolean allPotentialSurroundingMarked(Coordinate coordinate) {

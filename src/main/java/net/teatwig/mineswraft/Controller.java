@@ -74,7 +74,7 @@ public class Controller {
     private Board board;
     private Toggle currentDifficultyToggle;
     private boolean colorThemeActive = false;
-    private Difficulty currentDifficulty, lastDifficulty; // TODO remove lastDifficulty because it's not needed any longer
+    private Difficulty currentDifficulty;
     private IntegerProperty gridWith = new SimpleIntegerProperty();
 
     static final int BUTTON_SIZE = 25;
@@ -185,7 +185,7 @@ public class Controller {
         // happens when Accelerator for currentDifficultyToggle is pressed
         if (newToggle == null) {
             currentDifficultyToggle.setSelected(true);
-        } else if (newToggle != currentDifficultyToggle || currentDifficultyToggle == customToggle) {
+        } else if (newToggle != currentDifficultyToggle || customToggle == currentDifficultyToggle) {
             if (!board.isGameInProgress() || confirmDialogOK(CHANGE_DIFFICULTY)) {
                 currentDifficultyToggle = newToggle;
                 updateDifficulty();
@@ -246,7 +246,7 @@ public class Controller {
     private void mouseHandler(MouseEvent e) {
         EventType<? extends MouseEvent> event = e.getEventType();
         MouseButton button = e.getButton();
-        if (event == MOUSE_PRESSED) {
+        if (MOUSE_PRESSED == event) {
             pressSource = e.getSource();
         }
         Coordinate coordinate = Coordinate.of(
@@ -255,16 +255,19 @@ public class Controller {
         );
 
         if (e.isSecondaryButtonDown() && board.isFirstMoveDone() && !board.getField(coordinate).isOpen()) {
+            // mark fields with the right mouse button (after the first move and if it's not open)
             board.toggleMarking(coordinate);
             syncGridAndBoard();
         } else if (pressSource != null) {
-            // openField && (doubleClick || release && (middle || both))
             if (board.isFirstMoveDone() && board.getField(coordinate).isOpen()
                     && ((e.getClickCount() == 2 && button == PRIMARY)
                     || event == MOUSE_RELEASED && (button == MIDDLE || (primPressed && secPressed)))) {
+                // chord by double/middle/right+left clicking an open field
+                // openField && (doubleClick || release && (middle || both))
                 board.chord(coordinate);
                 syncGridAndBoard();
-            } else if (event == MOUSE_RELEASED && button == PRIMARY && secPressed == false) {
+            } else if (event == MOUSE_RELEASED && button == PRIMARY && !secPressed) {
+                // open a field if only the left mouse button is released
                 board.click(coordinate);
                 syncGridAndBoard();
             }
@@ -358,8 +361,6 @@ public class Controller {
     }
 
     private void updateDifficulty() {
-        lastDifficulty = currentDifficulty;
-
         RadioMenuItem r = (RadioMenuItem) currentDifficultyToggle;
         String name = r.getText().split(" ")[0];
         String value = r.getText().replaceFirst(".*\\((.*)\\).*", "$1").replaceAll("(\\d+)\\D+(\\d+)\\D+(\\d+)\\D+", "$1 $2 $3");
